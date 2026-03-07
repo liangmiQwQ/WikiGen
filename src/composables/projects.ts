@@ -23,6 +23,13 @@ export function useProjects() {
     return project;
   }
 
+  function updateProject(id: string, html: string) {
+    const project = projects.value.find((p) => p.id === id);
+    if (project) {
+      project.html = html;
+    }
+  }
+
   function deleteProject(id: string) {
     const index = projects.value.findIndex((p) => p.id === id);
     if (index !== -1) {
@@ -34,10 +41,18 @@ export function useProjects() {
     return projects.value.find((p) => p.id === id);
   }
 
+  function getProjectByConversationId(
+    conversationId: string,
+  ): Project | undefined {
+    return projects.value.find((p) => p.conversationId === conversationId);
+  }
+
   return {
     projects,
     createProject,
+    updateProject,
     deleteProject,
     getProjectById,
+    getProjectByConversationId,
   };
 }

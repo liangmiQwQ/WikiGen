@@ -1,7 +1,7 @@
 import { useStorage } from "@vueuse/core";
 import { v4 as uuidv4 } from "uuid";
 import { computed, ref } from "vue";
-import type { Conversation, Message } from "../types";
+import type { Conversation, Message, WebsiteFormData } from "../types";
 
 export function useChat() {
   const conversations = useStorage<Conversation[]>(
@@ -20,12 +20,13 @@ export function useChat() {
     );
   });
 
-  function createConversation(): string {
+  function createConversation(formData: WebsiteFormData): string {
     const id = uuidv4();
     const conversation: Conversation = {
       id,
-      title: "New Chat",
+      title: formData.topic,
       messages: [],
+      status: "creating",
       createdAt: Date.now(),
       updatedAt: Date.now(),
     };
@@ -48,6 +49,71 @@ export function useChat() {
     }
   }
 
+  function updateConversationStatus(
+    conversationId: string,
+    status: Conversation["status"],
+  ) {
+    const conversation = conversations.value.find(
+      (c) => c.id === conversationId,
+    );
+    if (conversation) {
+      conversation.status = status;
+      conversation.updatedAt = Date.now();
+    }
+  }
+
+  function setWebsiteData(
+    conversationId: string,
+    data: {
+      name: string;
+      description: string;
+      html: string;
+    },
+  ) {
+    const conversation = conversations.value.find(
+      (c) => c.id === conversationId,
+    );
+    if (!conversation) return;
+
+    conversation.website = {
+      name: data.name,
+      description: data.description,
+      currentHtml: data.html,
+      versions: [
+        {
+          version: 1,
+          html: data.html,
+          changeDescription: "Initial generation",
+          timestamp: Date.now(),
+        },
+      ],
+      createdAt: Date.now(),
+    };
+    conversation.status = "completed";
+    conversation.updatedAt = Date.now();
+  }
+
+  function updateWebsiteHtml(
+    conversationId: string,
+    html: string,
+    changeDescription: string,
+  ) {
+    const conversation = conversations.value.find(
+      (c) => c.id === conversationId,
+    );
+    if (!conversation || !conversation.website) return;
+
+    const newVersion = conversation.website.versions.length + 1;
+    conversation.website.versions.push({
+      version: newVersion,
+      html,
+      changeDescription,
+      timestamp: Date.now(),
+    });
+    conversation.website.currentHtml = html;
+    conversation.updatedAt = Date.now();
+  }
+
   function addMessage(
     conversationId: string,
     message: Omit<Message, "id" | "timestamp">,
@@ -64,13 +130,6 @@ export function useChat() {
     };
     conversation.messages.push(newMessage);
     conversation.updatedAt = Date.now();
-
-    // Update title if first user message
-    if (conversation.messages.length === 1 && message.role === "user") {
-      conversation.title =
-        message.content.slice(0, 30) +
-        (message.content.length > 30 ? "..." : "");
-    }
 
     return newMessage;
   }
@@ -118,6 +177,9 @@ export function useChat() {
     createConversation,
     selectConversation,
     deleteConversation,
+    updateConversationStatus,
+    setWebsiteData,
+    updateWebsiteHtml,
     addMessage,
     updateMessageContent,
     extractHtmlFromMessage,

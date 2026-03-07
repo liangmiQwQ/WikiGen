@@ -6,10 +6,25 @@ export interface Message {
   extractedHtml?: string;
 }
 
+export interface WebsiteVersion {
+  version: number;
+  html: string;
+  changeDescription: string;
+  timestamp: number;
+}
+
 export interface Conversation {
   id: string;
   title: string;
   messages: Message[];
+  website?: {
+    name: string;
+    description: string;
+    currentHtml: string;
+    versions: WebsiteVersion[];
+    createdAt: number;
+  };
+  status: "creating" | "generating" | "completed";
   createdAt: number;
   updatedAt: number;
 }
@@ -29,3 +44,11 @@ export interface Settings {
 }
 
 export type AIProvider = "kimi" | "deepseek";
+
+export interface WebsiteFormData {
+  topic: string;
+  targetAudience: string;
+  keySections: string[];
+  stylePreference: "modern" | "classic" | "minimal" | "colorful";
+  additionalRequirements: string;
+}

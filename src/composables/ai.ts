@@ -1,5 +1,6 @@
 import { ref } from "vue";
 import { useSettings } from "./settings";
+import type { WebsiteFormData } from "../types";
 
 interface StreamCallbacks {
   onChunk: (chunk: string) => void;
@@ -10,6 +11,76 @@ interface StreamCallbacks {
 function generatePreviewUrl(html: string): string {
   const blob = new Blob([html], { type: "text/html" });
   return URL.createObjectURL(blob);
+}
+
+export function extractHtmlFromResponse(content: string): string | null {
+  const htmlMatch = content.match(/```html\n?([\s\S]*?)```/);
+  return htmlMatch ? htmlMatch[1].trim() : null;
+}
+
+function buildWebsitePrompt(formData: WebsiteFormData): string {
+  const sectionsText =
+    formData.keySections.length > 0
+      ? `\nKey sections to include: ${formData.keySections.join(", ")}`
+      : "";
+
+  const styleMap: Record<string, string> = {
+    modern: "modern, clean with contemporary design trends",
+    classic: "classic, traditional with timeless aesthetics",
+    minimal: "minimalist with focus on content and whitespace",
+    colorful: "vibrant and colorful with engaging visual elements",
+  };
+
+  return `Create a complete, self-contained 知识类网站 (knowledge-based website) about "${formData.topic}".
+
+Target Audience: ${formData.targetAudience}
+Style: ${styleMap[formData.stylePreference] || styleMap.modern}${sectionsText}
+
+Additional Requirements:
+${formData.additionalRequirements || "None"}
+
+Requirements:
+1. Create a complete, standalone HTML file with embedded CSS and JavaScript
+2. Use modern, semantic HTML5 structure
+3. Include proper responsive design for mobile and desktop
+4. Use inline styles or <style> tags - no external CSS files
+5. Include interactive elements where appropriate
+6. The website should be educational and informative
+7. Use a clean, readable color scheme appropriate for a knowledge website
+
+IMPORTANT: Wrap your complete HTML code in triple backticks with the html language identifier like this:
+\`\`\`html
+[Your HTML code here]
+\`\`\``;
+}
+
+function buildModificationPrompt(
+  currentHtml: string,
+  modificationRequest: string,
+  conversationHistory: string,
+): string {
+  return `I have an existing 知识类网站 (knowledge-based website) that I want to modify.
+
+Here is the current HTML code:
+\`\`\`html
+${currentHtml}
+\`\`\`
+
+Previous conversation context:
+${conversationHistory}
+
+Modification request: ${modificationRequest}
+
+Please provide the complete updated HTML code with the requested changes. Make sure to:
+1. Keep the overall structure and purpose of the knowledge website
+2. Apply only the requested modifications
+3. Return the FULL HTML code, not just the changes
+4. Wrap your complete HTML code in triple backticks with the html language identifier
+
+IMPORTANT: Wrap your complete HTML code in triple backticks with the html language identifier like this:
+\`\`\`html
+[Your updated HTML code here]
+\`\`\``;
 }
 
 export function useAI() {
@@ -37,6 +108,28 @@ export function useAI() {
     }
   }
 
+  async function generateWebsite(
+    formData: WebsiteFormData,
+    callbacks: StreamCallbacks,
+  ) {
+    const prompt = buildWebsitePrompt(formData);
+    await streamChat(prompt, callbacks);
+  }
+
+  async function modifyWebsite(
+    currentHtml: string,
+    modificationRequest: string,
+    conversationHistory: string,
+    callbacks: StreamCallbacks,
+  ) {
+    const prompt = buildModificationPrompt(
+      currentHtml,
+      modificationRequest,
+      conversationHistory,
+    );
+    await streamChat(prompt, callbacks);
+  }
+
   async function streamDeepseek(message: string, callbacks: StreamCallbacks) {
     const response = await fetch("https://api.deepseek.com/chat/completions", {
       method: "POST",
@@ -50,7 +143,7 @@ export function useAI() {
           {
             role: "system",
             content:
-              "You are a helpful web developer assistant. When asked to create a website, provide complete, self-contained HTML code that can be directly rendered in a browser. Always wrap your HTML code in triple backticks with the html language identifier.",
+              "You are an expert web developer specializing in creating educational and knowledge-based websites. You create clean, modern, responsive HTML websites with excellent user experience. Always provide complete, self-contained HTML code that can be directly rendered in a browser.",
           },
           { role: "user", content: message },
         ],
@@ -117,7 +210,7 @@ export function useAI() {
             {
               role: "system",
               content:
-                "You are a helpful web developer assistant. When asked to create a website, provide complete, self-contained HTML code that can be directly rendered in a browser. Always wrap your HTML code in triple backticks with the html language identifier.",
+                "You are an expert web developer specializing in creating educational and knowledge-based websites. You create clean, modern, responsive HTML websites with excellent user experience. Always provide complete, self-contained HTML code that can be directly rendered in a browser.",
             },
             { role: "user", content: message },
           ],
@@ -173,6 +266,9 @@ export function useAI() {
   return {
     isStreaming,
     streamChat,
+    generateWebsite,
+    modifyWebsite,
     generatePreviewUrl,
+    extractHtmlFromResponse,
   };
 }
