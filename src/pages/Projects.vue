@@ -104,7 +104,9 @@ function getPreviewUrl(html: string): string {
       v-if="!hasProjects"
       class="py-12 text-center border rounded-lg md:py-16"
       :class="
-        isDark ? 'border-stone-800 bg-stone-900' : 'border-stone-200 bg-white'
+        isDark
+          ? 'border-stone-800 bg-stone-900'
+          : 'border-stone-200 bg-stone-100'
       "
     >
       <div
@@ -147,7 +149,9 @@ function getPreviewUrl(html: string): string {
         :key="project.id"
         class="group border rounded-lg transition-shadow overflow-hidden hover:shadow-lg"
         :class="
-          isDark ? 'border-stone-800 bg-stone-900' : 'border-stone-200 bg-white'
+          isDark
+            ? 'border-stone-800 bg-stone-900'
+            : 'border-stone-200 bg-stone-100'
         "
       >
         <!-- Preview -->
@@ -212,7 +216,7 @@ function getPreviewUrl(html: string): string {
         :class="
           isDark
             ? 'border-stone-800 bg-stone-900 hover:bg-stone-800'
-            : 'border-stone-200 bg-white hover:bg-stone-50'
+            : 'border-stone-200 bg-stone-100 hover:bg-stone-200'
         "
       >
         <!-- Thumbnail -->
@@ -255,7 +259,7 @@ function getPreviewUrl(html: string): string {
             class="p-2 rounded-md"
             :class="
               isDark
-                ? 'text-stone-400 hover:bg-stone-700 hover:text-stone-200'
+                ? 'text-stone-400 hover:bg-stone-800 hover:text-stone-200'
                 : 'text-stone-500 hover:bg-stone-200 hover:text-stone-800'
             "
             @click="openProject(project.id)"

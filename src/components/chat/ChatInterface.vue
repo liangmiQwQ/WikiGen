@@ -96,10 +96,7 @@ function handleKeydown(e: KeyboardEvent) {
 </script>
 
 <template>
-  <div
-    class="flex flex-col h-full"
-    :class="isDark ? 'bg-stone-900' : 'bg-stone-50'"
-  >
+  <div class="flex flex-col h-full">
     <!-- Messages -->
     <div
       ref="messagesContainer"
@@ -199,7 +196,9 @@ function handleKeydown(e: KeyboardEvent) {
       v-if="conversation?.status === 'completed'"
       class="p-3 border-t md:p-4"
       :class="
-        isDark ? 'border-stone-800 bg-stone-900' : 'border-stone-200 bg-white'
+        isDark
+          ? 'border-stone-800 bg-stone-900'
+          : 'border-stone-200 bg-stone-100'
       "
     >
       <div class="mx-auto flex gap-2 max-w-full items-end md:max-w-3xl">
@@ -220,8 +219,8 @@ function handleKeydown(e: KeyboardEvent) {
           class="text-lg text-white rounded-lg flex flex-shrink-0 h-11 w-11 transition-colors items-center justify-center md:h-12 md:w-12 disabled:cursor-not-allowed"
           :class="
             isDark
-              ? 'bg-stone-600 hover:bg-stone-500 disabled:opacity-50'
-              : 'bg-stone-700 hover:bg-stone-800 disabled:opacity-50'
+              ? 'bg-stone-800 hover:bg-stone-700 disabled:opacity-50'
+              : 'bg-stone-200 hover:bg-stone-300 disabled:opacity-50'
           "
           :disabled="isStreaming || !inputMessage.trim()"
           @click="handleSendModification"
@@ -236,7 +235,9 @@ function handleKeydown(e: KeyboardEvent) {
       v-else-if="isGenerating"
       class="p-4 text-center border-t"
       :class="
-        isDark ? 'border-stone-800 bg-stone-900' : 'border-stone-200 bg-white'
+        isDark
+          ? 'border-stone-800 bg-stone-900'
+          : 'border-stone-200 bg-stone-100'
       "
     >
       <div

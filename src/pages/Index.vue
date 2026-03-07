@@ -153,7 +153,7 @@ function toggleChat() {
     <div
       v-else-if="viewMode === 'generating'"
       class="p-8 flex flex-col h-full items-center justify-center"
-      :class="isDark ? 'bg-stone-900' : 'bg-stone-50'"
+      :class="isDark ? 'bg-stone-900' : 'bg-stone-100'"
     >
       <div class="mx-auto text-center max-w-md w-full">
         <div
@@ -185,7 +185,7 @@ function toggleChat() {
         <div class="mb-4 w-full">
           <div
             class="rounded-full h-2 w-full overflow-hidden"
-            :class="isDark ? 'bg-stone-800' : 'bg-stone-200'"
+            :class="isDark ? 'bg-stone-800' : 'bg-stone-100'"
           >
             <div
               class="rounded-full h-full transition-all duration-300 ease-out"
@@ -230,8 +230,8 @@ function toggleChat() {
         class="px-4 py-3 border-b flex flex-shrink-0 items-center justify-between"
         :class="
           isDark
-            ? 'border-stone-800 bg-stone-800/50'
-            : 'border-stone-200 bg-stone-50'
+            ? 'border-stone-800 bg-stone-900/50'
+            : 'border-stone-200 bg-stone-100'
         "
       >
         <div class="flex gap-3 items-center">
@@ -247,7 +247,7 @@ function toggleChat() {
             :class="
               isDark
                 ? 'bg-stone-800 text-stone-400'
-                : 'bg-stone-200 text-stone-600'
+                : 'bg-stone-100 text-stone-600'
             "
           >
             v{{ currentConversation.website.versions.length }}
@@ -261,7 +261,7 @@ function toggleChat() {
               showChat
                 ? isDark
                   ? 'bg-stone-800 text-stone-200'
-                  : 'bg-white text-stone-800 shadow-sm'
+                  : 'bg-stone-200 text-stone-800 shadow-sm'
                 : isDark
                   ? 'text-stone-400 hover:bg-stone-800 hover:text-stone-300'
                   : 'text-stone-600 hover:bg-stone-200 hover:text-stone-900'
@@ -319,8 +319,8 @@ function toggleChat() {
                 class="px-4 py-3 border-b flex flex-shrink-0 items-center justify-between lg:hidden"
                 :class="
                   isDark
-                    ? 'border-stone-800 bg-stone-800/50'
-                    : 'border-stone-200 bg-stone-50'
+                    ? 'border-stone-800 bg-stone-900/50'
+                    : 'border-stone-200 bg-stone-100'
                 "
               >
                 <span

@@ -25,18 +25,18 @@ const providerLinks: Record<AIProvider, { url: string; label: string }> = {
 const theme = computed(() => ({
   card: isDark.value
     ? "bg-stone-900 border-stone-800"
-    : "bg-white border-stone-200",
+    : "bg-stone-100 border-stone-200",
   title: isDark.value ? "text-stone-100" : "text-stone-900",
   subtitle: isDark.value ? "text-stone-200" : "text-stone-900",
   label: isDark.value ? "text-stone-300" : "text-stone-700",
   input: isDark.value
-    ? "bg-stone-900 border-stone-700 text-stone-200 focus:border-stone-500 placeholder-stone-600"
-    : "bg-white border-stone-300 text-stone-900 focus:border-stone-500 placeholder-stone-400",
+    ? "bg-stone-900 border-stone-700 text-stone-200 focus:border-stone-500 placeholder-stone-500"
+    : "bg-stone-100 border-stone-300 text-stone-900 focus:border-stone-500 placeholder-stone-400",
   hint: "text-stone-500",
   link: isDark.value ? "text-stone-400" : "text-stone-600",
   button: isDark.value
-    ? "bg-stone-800 border-stone-700 text-stone-300 hover:bg-stone-700 hover:text-stone-200"
-    : "bg-stone-100 border-stone-300 text-stone-700 hover:bg-stone-200",
+    ? "bg-stone-900 border-stone-800 text-stone-300 hover:bg-stone-800 hover:text-stone-200"
+    : "bg-stone-200 border-stone-300 text-stone-700 hover:bg-stone-300",
   divider: isDark.value ? "border-stone-800" : "border-stone-200",
 }));
 

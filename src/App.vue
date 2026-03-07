@@ -9,7 +9,7 @@ const { isDark } = useDarkTheme();
 <template>
   <div
     class="min-h-screen"
-    :class="isDark ? 'dark bg-stone-950' : 'bg-stone-100'"
+    :class="isDark ? 'dark bg-stone-950' : 'bg-stone-50'"
   >
     <AppHeader />
     <main class="h-[calc(100vh-64px)] overflow-hidden">

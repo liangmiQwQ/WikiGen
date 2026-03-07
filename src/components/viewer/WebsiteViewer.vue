@@ -54,10 +54,7 @@ function handleSave() {
 </script>
 
 <template>
-  <div
-    class="flex flex-col h-full"
-    :class="isDark ? 'bg-stone-900' : 'bg-white'"
-  >
+  <div class="flex flex-col h-full">
     <!-- Tabs -->
     <div
       class="px-4 py-3 border-b"

@@ -49,10 +49,7 @@ function handleSubmit() {
 </script>
 
 <template>
-  <div
-    class="p-4 h-full overflow-y-auto md:p-6"
-    :class="isDark ? 'bg-stone-900' : 'bg-stone-50'"
-  >
+  <div class="p-4 h-full overflow-y-auto md:p-6">
     <div class="mx-auto max-w-2xl">
       <div class="mb-8 text-center">
         <div
@@ -98,8 +95,8 @@ function handleSubmit() {
             class="text-sm px-4 py-3 border rounded-lg w-full transition-colors focus:outline-none"
             :class="
               isDark
-                ? 'border-stone-700 bg-stone-800 text-stone-200 placeholder-stone-500 focus:border-stone-500'
-                : 'border-stone-200 bg-white text-stone-900 placeholder-stone-400 focus:border-stone-500'
+                ? 'border-stone-600 bg-stone-800/50 text-stone-100 placeholder-stone-500 focus:border-stone-400'
+                : 'border-stone-300 bg-white text-stone-900 placeholder-stone-400 focus:border-stone-500'
             "
             required
           />
@@ -118,8 +115,8 @@ function handleSubmit() {
             class="text-sm px-4 py-3 border rounded-lg w-full transition-colors focus:outline-none"
             :class="
               isDark
-                ? 'border-stone-700 bg-stone-800 text-stone-200 placeholder-stone-500 focus:border-stone-500'
-                : 'border-stone-200 bg-white text-stone-900 placeholder-stone-400 focus:border-stone-500'
+                ? 'border-stone-600 bg-stone-800/50 text-stone-100 placeholder-stone-500 focus:border-stone-400'
+                : 'border-stone-300 bg-white text-stone-900 placeholder-stone-400 focus:border-stone-500'
             "
             required
           />
@@ -140,11 +137,11 @@ function handleSubmit() {
               :class="
                 formData.keySections.includes(section.value)
                   ? isDark
-                    ? 'border-stone-500 bg-stone-700 text-stone-200'
-                    : 'border-stone-500 bg-stone-200 text-stone-800'
+                    ? 'border-stone-500 bg-stone-600 text-stone-100'
+                    : 'border-stone-600 bg-stone-300 text-stone-900'
                   : isDark
-                    ? 'border-stone-700 text-stone-400 hover:border-stone-500 hover:text-stone-300'
-                    : 'border-stone-200 text-stone-600 hover:border-stone-400 hover:text-stone-800'
+                    ? 'border-stone-600 text-stone-400 hover:border-stone-500 hover:text-stone-300'
+                    : 'border-stone-300 text-stone-600 hover:border-stone-400 hover:text-stone-800'
               "
               @click="toggleSection(section.value)"
             >
@@ -168,11 +165,11 @@ function handleSubmit() {
               :class="
                 formData.stylePreference === style.value
                   ? isDark
-                    ? 'border-stone-500 bg-stone-800 text-stone-200'
-                    : 'border-stone-500 bg-stone-100 text-stone-800'
+                    ? 'border-stone-500 bg-stone-900 text-stone-100'
+                    : 'border-stone-600 bg-stone-100 text-stone-900'
                   : isDark
-                    ? 'border-stone-700 text-stone-400 hover:border-stone-600 hover:text-stone-300'
-                    : 'border-stone-200 text-stone-600 hover:border-stone-300 hover:text-stone-800'
+                    ? 'border-stone-600 text-stone-400 hover:border-stone-500 hover:text-stone-300'
+                    : 'border-stone-300 text-stone-600 hover:border-stone-400 hover:text-stone-800'
               "
               @click="formData.stylePreference = style.value"
             >
@@ -195,8 +192,8 @@ function handleSubmit() {
             class="text-sm px-4 py-3 border rounded-lg w-full resize-none transition-colors focus:outline-none"
             :class="
               isDark
-                ? 'border-stone-700 bg-stone-800 text-stone-200 placeholder-stone-500 focus:border-stone-500'
-                : 'border-stone-200 bg-white text-stone-900 placeholder-stone-400 focus:border-stone-500'
+                ? 'border-stone-600 bg-stone-800/50 text-stone-100 placeholder-stone-500 focus:border-stone-400'
+                : 'border-stone-300 bg-white text-stone-900 placeholder-stone-400 focus:border-stone-500'
             "
           />
         </div>

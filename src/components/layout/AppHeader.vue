@@ -15,9 +15,7 @@ const navItems = [
 <template>
   <header
     class="border-b h-16"
-    :class="
-      isDark ? 'bg-stone-900 border-stone-800' : 'bg-white border-stone-200'
-    "
+    :class="isDark ? 'border-stone-800' : 'border-stone-200'"
   >
     <div
       class="mx-auto px-4 flex h-full max-w-7xl items-center justify-between md:px-6"
@@ -39,8 +37,8 @@ const navItems = [
             :class="
               route.path === item.path
                 ? isDark
-                  ? 'bg-stone-800 text-stone-200'
-                  : 'bg-stone-100 text-stone-800'
+                  ? 'bg-stone-800 text-stone-100'
+                  : 'bg-stone-200 text-stone-900'
                 : isDark
                   ? 'text-stone-400 hover:bg-stone-800 hover:text-stone-200'
                   : 'text-stone-500 hover:bg-stone-100 hover:text-stone-900'
