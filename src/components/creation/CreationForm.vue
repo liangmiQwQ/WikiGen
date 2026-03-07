@@ -1,9 +1,6 @@
 <script setup lang="ts">
 import { reactive } from "vue";
-import { useDarkTheme } from "../../composables/dark-theme";
 import type { WebsiteFormData } from "../../types";
-
-const { isDark } = useDarkTheme();
 
 const emit = defineEmits<{
   submit: [data: WebsiteFormData];
@@ -29,8 +26,8 @@ const sectionOptions = [
 const styleOptions = [
   { value: "modern", label: "Modern", icon: "i-ph-rocket" },
   { value: "classic", label: "Classic", icon: "i-ph-book-bookmark" },
-  { value: "minimal", label: "Minimal", icon: "i-ph-minus" },
-  { value: "colorful", label: "Colorful", icon: "i ph-palette" },
+  { value: "minimal", label: "Minimal", icon: "i-ph-minus-square" },
+  { value: "colorful", label: "Colorful", icon: "i-ph-palette" },
 ] as const;
 
 function toggleSection(section: string) {
@@ -53,33 +50,23 @@ function handleSubmit() {
     <div class="mx-auto max-w-2xl">
       <div class="mb-8 text-center">
         <div
-          class="text-3xl mx-auto mb-4 rounded-2xl flex h-16 w-16 items-center justify-center"
-          :class="
-            isDark
-              ? 'bg-stone-800 text-stone-300'
-              : 'bg-stone-200 text-stone-600'
-          "
+          class="text-3xl text-stone-600 mx-auto mb-4 rounded-2xl bg-stone-200 flex h-16 w-16 items-center justify-center dark:text-stone-300 dark:bg-stone-800"
         >
           <div class="i-ph-book-open-text text-2xl" />
         </div>
         <h1
-          class="text-2xl font-bold mb-2 md:text-3xl"
-          :class="isDark ? 'text-stone-100' : 'text-stone-900'"
+          class="text-2xl text-stone-900 font-bold mb-2 md:text-3xl dark:text-stone-100"
         >
           Create Knowledge Website
         </h1>
-        <p
-          class="text-base"
-          :class="isDark ? 'text-stone-400' : 'text-stone-600'"
-        >
+        <p class="text-base text-stone-600 dark:text-stone-400">
           Fill in the details below and let AI generate a beautiful knowledge
           website for you
         </p>
       </div>
 
       <form
-        class="space-y-6"
-        :class="isDark ? 'text-stone-200' : 'text-stone-800'"
+        class="text-stone-800 space-y-6 dark:text-stone-200"
         @submit.prevent="handleSubmit"
       >
         <!-- Topic -->
@@ -92,12 +79,7 @@ function handleSubmit() {
             v-model="formData.topic"
             type="text"
             placeholder="e.g., Quantum Physics Basics, History of Renaissance Art..."
-            class="text-sm px-4 py-3 border rounded-lg w-full transition-colors focus:outline-none"
-            :class="
-              isDark
-                ? 'border-stone-600 bg-stone-800/50 text-stone-100 placeholder-stone-500 focus:border-stone-400'
-                : 'border-stone-300 bg-white text-stone-900 placeholder-stone-400 focus:border-stone-500'
-            "
+            class="text-sm text-stone-900 px-4 py-3 border border-stone-300 rounded-lg bg-white w-full transition-colors dark:text-stone-100 focus:outline-none dark:border-stone-600 focus:border-stone-500 dark:bg-stone-800/50 dark:focus:border-stone-400 placeholder-stone-400 dark:placeholder-stone-500"
             required
           />
         </div>
@@ -112,12 +94,7 @@ function handleSubmit() {
             v-model="formData.targetAudience"
             type="text"
             placeholder="e.g., High school students, professionals, general public..."
-            class="text-sm px-4 py-3 border rounded-lg w-full transition-colors focus:outline-none"
-            :class="
-              isDark
-                ? 'border-stone-600 bg-stone-800/50 text-stone-100 placeholder-stone-500 focus:border-stone-400'
-                : 'border-stone-300 bg-white text-stone-900 placeholder-stone-400 focus:border-stone-500'
-            "
+            class="text-sm text-stone-900 px-4 py-3 border border-stone-300 rounded-lg bg-white w-full transition-colors dark:text-stone-100 focus:outline-none dark:border-stone-600 focus:border-stone-500 dark:bg-stone-800/50 dark:focus:border-stone-400 placeholder-stone-400 dark:placeholder-stone-500"
             required
           />
         </div>
@@ -136,12 +113,8 @@ function handleSubmit() {
               class="text-sm px-4 py-2 border rounded-full transition-all"
               :class="
                 formData.keySections.includes(section.value)
-                  ? isDark
-                    ? 'border-stone-500 bg-stone-600 text-stone-100'
-                    : 'border-stone-600 bg-stone-300 text-stone-900'
-                  : isDark
-                    ? 'border-stone-600 text-stone-400 hover:border-stone-500 hover:text-stone-300'
-                    : 'border-stone-300 text-stone-600 hover:border-stone-400 hover:text-stone-800'
+                  ? 'border-stone-600 bg-stone-300 text-stone-900 dark:border-stone-500 dark:bg-stone-600 dark:text-stone-100'
+                  : 'border-stone-300 text-stone-600 hover:border-stone-400 hover:text-stone-800 dark:border-stone-600 dark:text-stone-400 dark:hover:border-stone-500 dark:hover:text-stone-300'
               "
               @click="toggleSection(section.value)"
             >
@@ -164,12 +137,8 @@ function handleSubmit() {
               class="p-4 border rounded-lg flex flex-col gap-2 transition-all items-center"
               :class="
                 formData.stylePreference === style.value
-                  ? isDark
-                    ? 'border-stone-500 bg-stone-900 text-stone-100'
-                    : 'border-stone-600 bg-stone-100 text-stone-900'
-                  : isDark
-                    ? 'border-stone-600 text-stone-400 hover:border-stone-500 hover:text-stone-300'
-                    : 'border-stone-300 text-stone-600 hover:border-stone-400 hover:text-stone-800'
+                  ? 'border-stone-600 bg-stone-100 text-stone-900 dark:border-stone-500 dark:bg-stone-900 dark:text-stone-100'
+                  : 'border-stone-300 text-stone-600 hover:border-stone-400 hover:text-stone-800 dark:border-stone-600 dark:text-stone-400 dark:hover:border-stone-500 dark:hover:text-stone-300'
               "
               @click="formData.stylePreference = style.value"
             >
@@ -189,24 +158,14 @@ function handleSubmit() {
             v-model="formData.additionalRequirements"
             rows="3"
             placeholder="Any specific features, content requirements, or design preferences..."
-            class="text-sm px-4 py-3 border rounded-lg w-full resize-none transition-colors focus:outline-none"
-            :class="
-              isDark
-                ? 'border-stone-600 bg-stone-800/50 text-stone-100 placeholder-stone-500 focus:border-stone-400'
-                : 'border-stone-300 bg-white text-stone-900 placeholder-stone-400 focus:border-stone-500'
-            "
+            class="text-sm text-stone-900 px-4 py-3 border border-stone-300 rounded-lg bg-white w-full resize-none transition-colors dark:text-stone-100 focus:outline-none dark:border-stone-600 focus:border-stone-500 dark:bg-stone-800/50 dark:focus:border-stone-400 placeholder-stone-400 dark:placeholder-stone-500"
           />
         </div>
 
         <!-- Submit Button -->
         <button
           type="submit"
-          class="text-sm text-white font-medium py-3.5 rounded-lg flex gap-2 w-full transition-colors items-center justify-center"
-          :class="
-            isDark
-              ? 'bg-stone-600 hover:bg-stone-500'
-              : 'bg-stone-700 hover:bg-stone-800'
-          "
+          class="text-sm text-stone-800 font-medium py-3 border border-stone-500 rounded-lg bg-stone-50 flex gap-2 w-full transition-all items-center justify-center dark:text-stone-200 dark:border-stone-400 dark:bg-stone-800 disabled:opacity-50 disabled:cursor-not-allowed"
           :disabled="!formData.topic.trim()"
         >
           <div class="i ph-magic-wand text-lg" />

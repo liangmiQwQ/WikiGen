@@ -3,7 +3,6 @@ import MarkdownRender from "markstream-vue";
 import { computed, nextTick, ref, watch } from "vue";
 import { extractHtmlFromResponse, useAI } from "../../composables/ai";
 import { useChat } from "../../composables/chat";
-import { useDarkTheme } from "../../composables/dark-theme";
 import type { Conversation } from "../../types";
 
 const props = defineProps<{
@@ -14,7 +13,6 @@ const emit = defineEmits<{
   websiteModified: [html: string, description: string];
 }>();
 
-const { isDark } = useDarkTheme();
 const { isStreaming, modifyWebsite } = useAI();
 const { addMessage } = useChat();
 
@@ -105,29 +103,19 @@ function handleKeydown(e: KeyboardEvent) {
       <!-- Empty State -->
       <div
         v-if="messages.length === 0"
-        class="p-8 text-center flex flex-1 flex-col items-center justify-center"
-        :class="isDark ? 'text-stone-500' : 'text-stone-500'"
+        class="text-stone-500 p-8 text-center flex flex-1 flex-col items-center justify-center"
       >
         <div
-          class="text-3xl mb-4 rounded-2xl flex h-16 w-16 items-center justify-center"
-          :class="
-            isDark
-              ? 'bg-stone-800 text-stone-300'
-              : 'bg-stone-200 text-stone-600'
-          "
+          class="text-3xl text-stone-600 mb-4 rounded-2xl bg-stone-200 flex h-16 w-16 items-center justify-center dark:text-stone-300 dark:bg-stone-800"
         >
           <div class="i-ph-robot text-2xl" />
         </div>
         <h3
-          class="text-lg font-semibold mb-2"
-          :class="isDark ? 'text-stone-100' : 'text-stone-900'"
+          class="text-lg text-stone-900 font-semibold mb-2 dark:text-stone-100"
         >
           AI Agent
         </h3>
-        <p
-          class="text-sm"
-          :class="isDark ? 'text-stone-400' : 'text-stone-600'"
-        >
+        <p class="text-sm text-stone-600 dark:text-stone-400">
           Your website has been generated. You can request modifications here.
         </p>
       </div>
@@ -138,30 +126,17 @@ function handleKeydown(e: KeyboardEvent) {
           <div class="flex flex-shrink-0 h-6 w-6 items-center justify-center">
             <div
               v-if="message.role === 'user'"
-              class="i-ph-user"
-              :class="isDark ? 'text-stone-500' : 'text-stone-400'"
+              class="i-ph-user text-stone-400 dark:text-stone-500"
             />
-            <div
-              v-else
-              class="i ph-robot"
-              :class="isDark ? 'text-stone-500' : 'text-stone-400'"
-            />
+            <div v-else class="i ph-robot text-stone-400 dark:text-stone-500" />
           </div>
           <div class="flex-1 min-w-0">
-            <div
-              class="max-w-none prose prose-sm"
-              :class="isDark ? 'prose-invert' : ''"
-            >
+            <div class="max-w-none prose prose-sm dark:prose-invert">
               <MarkdownRender :content="message.content" />
             </div>
             <div v-if="message.extractedHtml" class="mt-2 flex gap-2">
               <span
-                class="text-xs px-2 py-1 rounded flex gap-1 w-fit items-center"
-                :class="
-                  isDark
-                    ? 'bg-stone-800 text-stone-400'
-                    : 'bg-stone-100 text-stone-600'
-                "
+                class="text-xs text-stone-600 px-2 py-1 rounded bg-stone-100 flex gap-1 w-fit items-center dark:text-stone-400 dark:bg-stone-800"
               >
                 <div class="i-ph-check-circle" />
                 HTML Updated
@@ -173,18 +148,15 @@ function handleKeydown(e: KeyboardEvent) {
         <!-- Loading Indicator -->
         <div v-if="isStreaming" class="p-3 flex gap-1 self-start">
           <span
-            class="rounded-full h-2 w-2 animate-bounce"
-            :class="isDark ? 'bg-stone-600' : 'bg-stone-400'"
+            class="rounded-full bg-stone-400 h-2 w-2 animate-bounce dark:bg-stone-600"
             style="animation-delay: 0ms"
           />
           <span
-            class="rounded-full h-2 w-2 animate-bounce"
-            :class="isDark ? 'bg-stone-600' : 'bg-stone-400'"
+            class="rounded-full bg-stone-400 h-2 w-2 animate-bounce dark:bg-stone-600"
             style="animation-delay: 150ms"
           />
           <span
-            class="rounded-full h-2 w-2 animate-bounce"
-            :class="isDark ? 'bg-stone-600' : 'bg-stone-400'"
+            class="rounded-full bg-stone-400 h-2 w-2 animate-bounce dark:bg-stone-600"
             style="animation-delay: 300ms"
           />
         </div>
@@ -194,12 +166,7 @@ function handleKeydown(e: KeyboardEvent) {
     <!-- Input Area -->
     <div
       v-if="conversation?.status === 'completed'"
-      class="p-3 border-t md:p-4"
-      :class="
-        isDark
-          ? 'border-stone-800 bg-stone-900'
-          : 'border-stone-200 bg-stone-100'
-      "
+      class="p-3 border-t border-stone-200 bg-stone-100 md:p-4 dark:border-stone-800 dark:bg-stone-900"
     >
       <div class="mx-auto flex gap-2 max-w-full items-end md:max-w-3xl">
         <textarea
@@ -207,21 +174,11 @@ function handleKeydown(e: KeyboardEvent) {
           placeholder="Request modifications to your website..."
           :disabled="isStreaming"
           rows="1"
-          class="text-sm leading-relaxed px-3.5 py-2.5 border rounded-lg flex-1 max-h-[120px] min-h-[44px] resize-none transition-colors md:px-4 md:py-3 focus:outline-none disabled:opacity-60 disabled:cursor-not-allowed"
-          :class="
-            isDark
-              ? 'border-stone-700 bg-stone-900 text-stone-200 placeholder-stone-500 focus:border-stone-500 focus:bg-stone-800'
-              : 'border-stone-200 bg-stone-50 text-stone-900 placeholder-stone-400 focus:border-stone-500 focus:bg-white'
-          "
+          class="text-sm text-stone-900 leading-relaxed px-3.5 py-2.5 border border-stone-200 rounded-lg bg-stone-50 flex-1 max-h-[120px] min-h-[44px] resize-none transition-colors dark:text-stone-200 md:px-4 md:py-3 focus:outline-none dark:border-stone-700 focus:border-stone-500 dark:bg-stone-900 focus:bg-white disabled:opacity-60 disabled:cursor-not-allowed dark:focus:border-stone-500 dark:focus:bg-stone-800 placeholder-stone-400 dark:placeholder-stone-500"
           @keydown="handleKeydown"
         />
         <button
-          class="text-lg text-white rounded-lg flex flex-shrink-0 h-11 w-11 transition-colors items-center justify-center md:h-12 md:w-12 disabled:cursor-not-allowed"
-          :class="
-            isDark
-              ? 'bg-stone-800 hover:bg-stone-700 disabled:opacity-50'
-              : 'bg-stone-200 hover:bg-stone-300 disabled:opacity-50'
-          "
+          class="text-lg text-white rounded-lg bg-stone-200 flex flex-shrink-0 h-11 w-11 transition-colors items-center justify-center dark:bg-stone-800 hover:bg-stone-300 disabled:opacity-50 md:h-12 md:w-12 disabled:cursor-not-allowed dark:hover:bg-stone-700"
           :disabled="isStreaming || !inputMessage.trim()"
           @click="handleSendModification"
         >
@@ -233,16 +190,10 @@ function handleKeydown(e: KeyboardEvent) {
     <!-- Generating State -->
     <div
       v-else-if="isGenerating"
-      class="p-4 text-center border-t"
-      :class="
-        isDark
-          ? 'border-stone-800 bg-stone-900'
-          : 'border-stone-200 bg-stone-100'
-      "
+      class="p-4 text-center border-t border-stone-200 bg-stone-100 dark:border-stone-800 dark:bg-stone-900"
     >
       <div
-        class="text-sm flex gap-2 items-center justify-center"
-        :class="isDark ? 'text-stone-400' : 'text-stone-500'"
+        class="text-sm text-stone-500 flex gap-2 items-center justify-center dark:text-stone-400"
       >
         <div class="i ph-spinner text-lg animate-spin" />
         Generating your knowledge website...

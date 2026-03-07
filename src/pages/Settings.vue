@@ -1,11 +1,9 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import { useDarkTheme } from "../composables/dark-theme";
 import { useSettings } from "../composables/settings";
 import type { AIProvider } from "../types";
 
 const { settings, updateProvider, updateApiKey, resetSettings } = useSettings();
-const { isDark } = useDarkTheme();
 
 const providers: { value: AIProvider; label: string }[] = [
   { value: "deepseek", label: "DeepSeek" },
@@ -22,23 +20,19 @@ const providerLinks: Record<AIProvider, { url: string; label: string }> = {
   moonshot: { url: "https://platform.moonshot.com/", label: "Moonshot AI" },
 };
 
-const theme = computed(() => ({
-  card: isDark.value
-    ? "bg-stone-900 border-stone-800"
-    : "bg-stone-100 border-stone-200",
-  title: isDark.value ? "text-stone-100" : "text-stone-900",
-  subtitle: isDark.value ? "text-stone-200" : "text-stone-900",
-  label: isDark.value ? "text-stone-300" : "text-stone-700",
-  input: isDark.value
-    ? "bg-stone-900 border-stone-700 text-stone-200 focus:border-stone-500 placeholder-stone-500"
-    : "bg-stone-100 border-stone-300 text-stone-900 focus:border-stone-500 placeholder-stone-400",
+const theme = {
+  card: "bg-stone-100 border-stone-200 dark:bg-stone-900 dark:border-stone-800",
+  title: "text-stone-900 dark:text-stone-100",
+  subtitle: "text-stone-900 dark:text-stone-200",
+  label: "text-stone-700 dark:text-stone-300",
+  input:
+    "bg-stone-100 border-stone-300 text-stone-900 focus:border-stone-500 placeholder-stone-400 dark:bg-stone-900 dark:border-stone-700 dark:text-stone-200 dark:placeholder-stone-500",
   hint: "text-stone-500",
-  link: isDark.value ? "text-stone-400" : "text-stone-600",
-  button: isDark.value
-    ? "bg-stone-900 border-stone-800 text-stone-300 hover:bg-stone-800 hover:text-stone-200"
-    : "bg-stone-200 border-stone-300 text-stone-700 hover:bg-stone-300",
-  divider: isDark.value ? "border-stone-800" : "border-stone-200",
-}));
+  link: "text-stone-600 dark:text-stone-400",
+  button:
+    "bg-stone-200 border-stone-300 text-stone-700 hover:bg-stone-300 dark:bg-stone-900 dark:border-stone-800 dark:text-stone-300 dark:hover:bg-stone-800 dark:hover:text-stone-200",
+  divider: "border-stone-200 dark:border-stone-800",
+};
 
 const currentApiKey = computed({
   get: () => settings.value.apiKeys[settings.value.provider],

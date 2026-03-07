@@ -5,10 +5,7 @@ import CreationForm from "../components/creation/CreationForm.vue";
 import WebsiteViewer from "../components/viewer/WebsiteViewer.vue";
 import { useAI } from "../composables/ai";
 import { useChat } from "../composables/chat";
-import { useDarkTheme } from "../composables/dark-theme";
 import type { WebsiteFormData } from "../types";
-
-const { isDark } = useDarkTheme();
 const {
   currentConversation,
   currentConversationId,
@@ -129,8 +126,7 @@ function toggleChat() {
     <!-- Error Toast -->
     <div
       v-if="generationError"
-      class="text-white p-4 rounded-lg max-w-md shadow-lg right-4 top-20 fixed z-50"
-      :class="isDark ? 'bg-red-900' : 'bg-red-600'"
+      class="text-white p-4 rounded-lg bg-red-600 max-w-md shadow-lg right-4 top-20 fixed z-50 dark:bg-red-900"
     >
       <div class="flex gap-3 items-start">
         <div class="i-ph-warning-circle text-xl" />
@@ -152,71 +148,51 @@ function toggleChat() {
     <!-- View: Generating with Progress Bar -->
     <div
       v-else-if="viewMode === 'generating'"
-      class="p-8 flex flex-col h-full items-center justify-center"
-      :class="isDark ? 'bg-stone-900' : 'bg-stone-100'"
+      class="p-8 bg-stone-100 flex flex-col h-full items-center justify-center dark:bg-stone-900"
     >
       <div class="mx-auto text-center max-w-md w-full">
         <div
-          class="text-4xl mx-auto mb-6 rounded-2xl flex h-20 w-20 items-center justify-center animate-pulse"
-          :class="
-            isDark
-              ? 'bg-stone-800 text-stone-300'
-              : 'bg-stone-200 text-stone-600'
-          "
+          class="text-4xl text-stone-600 mx-auto mb-6 rounded-2xl bg-stone-200 flex h-20 w-20 items-center justify-center animate-pulse dark:text-stone-300 dark:bg-stone-800"
         >
           <div class="i-ph-magic-wand text-3xl" />
         </div>
 
-        <h2
-          class="text-2xl font-bold mb-2"
-          :class="isDark ? 'text-stone-100' : 'text-stone-900'"
-        >
+        <h2 class="text-2xl text-stone-900 font-bold mb-2 dark:text-stone-100">
           Creating Your Website
         </h2>
 
-        <p
-          class="text-sm mb-8"
-          :class="isDark ? 'text-stone-400' : 'text-stone-600'"
-        >
+        <p class="text-sm text-stone-600 mb-8 dark:text-stone-400">
           Our AI is crafting a beautiful knowledge website for you...
         </p>
 
         <!-- Progress Bar -->
         <div class="mb-4 w-full">
           <div
-            class="rounded-full h-2 w-full overflow-hidden"
-            :class="isDark ? 'bg-stone-800' : 'bg-stone-100'"
+            class="rounded-full bg-stone-100 h-2 w-full overflow-hidden dark:bg-stone-800"
           >
             <div
-              class="rounded-full h-full transition-all duration-300 ease-out"
-              :class="isDark ? 'bg-stone-500' : 'bg-stone-600'"
+              class="rounded-full bg-stone-600 h-full transition-all duration-300 ease-out dark:bg-stone-500"
               :style="{ width: `${Math.min(generationProgress, 100)}%` }"
             />
           </div>
         </div>
 
-        <p
-          class="text-xs"
-          :class="isDark ? 'text-stone-500' : 'text-stone-400'"
-        >
+        <p class="text-xs text-stone-400 dark:text-stone-500">
           {{ Math.round(Math.min(generationProgress, 100)) }}% complete
         </p>
 
         <!-- Animated steps -->
         <div class="mt-8 flex gap-2 justify-center">
           <span
-            class="rounded-full h-2 w-2 animate-bounce"
-            :class="isDark ? 'bg-stone-600' : 'bg-stone-400'"
+            class="rounded-full bg-stone-400 h-2 w-2 animate-bounce dark:bg-stone-600"
             style="animation-delay: 0ms"
           />
           <span
-            class="rounded-full h-2 w-2 animate-bounce"
-            :class="isDark ? 'bg-stone-600' : 'bg-stone-400'"
+            class="rounded-full bg-stone-400 h-2 w-2 animate-bounce dark:bg-stone-600"
             style="animation-delay: 150ms"
           />
           <span
-            class="rounded-full h-2 w-2 animate-bounce"
-            :class="isDark ? 'bg-stone-600' : 'bg-stone-400'"
+            class="rounded-full bg-stone-400 h-2 w-2 animate-bounce dark:bg-stone-600"
             style="animation-delay: 300ms"
           />
         </div>
@@ -227,28 +203,17 @@ function toggleChat() {
     <div v-else-if="viewMode === 'preview'" class="flex flex-col h-full">
       <!-- Top Bar with Actions -->
       <div
-        class="px-4 py-3 border-b flex flex-shrink-0 items-center justify-between"
-        :class="
-          isDark
-            ? 'border-stone-800 bg-stone-900/50'
-            : 'border-stone-200 bg-stone-100'
-        "
+        class="px-4 py-3 border-b border-stone-200 bg-stone-100 flex flex-shrink-0 items-center justify-between dark:border-stone-800 dark:bg-stone-900/50"
       >
         <div class="flex gap-3 items-center">
           <h1
-            class="text-base font-semibold"
-            :class="isDark ? 'text-stone-200' : 'text-stone-800'"
+            class="text-base text-stone-800 font-semibold dark:text-stone-200"
           >
             {{ currentConversation?.website?.name }}
           </h1>
           <span
             v-if="currentConversation?.website?.versions.length"
-            class="text-xs px-2 py-1 rounded"
-            :class="
-              isDark
-                ? 'bg-stone-800 text-stone-400'
-                : 'bg-stone-100 text-stone-600'
-            "
+            class="text-xs text-stone-600 px-2 py-1 rounded bg-stone-100 dark:text-stone-400 dark:bg-stone-800"
           >
             v{{ currentConversation.website.versions.length }}
           </span>
@@ -259,12 +224,8 @@ function toggleChat() {
             class="text-sm font-medium px-3 py-2 rounded-md flex gap-1.5 items-center"
             :class="
               showChat
-                ? isDark
-                  ? 'bg-stone-800 text-stone-200'
-                  : 'bg-stone-200 text-stone-800 shadow-sm'
-                : isDark
-                  ? 'text-stone-400 hover:bg-stone-800 hover:text-stone-300'
-                  : 'text-stone-600 hover:bg-stone-200 hover:text-stone-900'
+                ? 'bg-stone-200 text-stone-800 shadow-sm dark:bg-stone-800 dark:text-stone-200'
+                : 'text-stone-600 hover:bg-stone-200 hover:text-stone-900 dark:text-stone-400 dark:hover:bg-stone-800 dark:hover:text-stone-300'
             "
             @click="toggleChat"
           >
@@ -278,12 +239,7 @@ function toggleChat() {
           </button>
 
           <button
-            class="text-sm font-medium px-3 py-2 rounded-md flex gap-1.5 items-center"
-            :class="
-              isDark
-                ? 'text-stone-400 hover:bg-stone-800 hover:text-stone-300'
-                : 'text-stone-600 hover:bg-stone-200 hover:text-stone-900'
-            "
+            class="text-sm text-stone-600 font-medium px-3 py-2 rounded-md flex gap-1.5 items-center dark:text-stone-400 hover:text-stone-900 hover:bg-stone-200 dark:hover:text-stone-300 dark:hover:bg-stone-800"
             @click="startNew"
           >
             <div class="i-ph-plus text-base" />
@@ -311,31 +267,19 @@ function toggleChat() {
           <!-- Chat Panel (conditionally shown) -->
           <div
             v-if="showChat"
-            class="flex-shrink-0 h-full w-full lg:border-l lg:max-w-md lg:w-1/3"
-            :class="isDark ? 'border-stone-800' : 'border-stone-200'"
+            class="border-stone-200 flex-shrink-0 h-full w-full lg:border-l dark:border-stone-800 lg:max-w-md lg:w-1/3"
           >
             <div class="flex flex-col h-full">
               <div
-                class="px-4 py-3 border-b flex flex-shrink-0 items-center justify-between lg:hidden"
-                :class="
-                  isDark
-                    ? 'border-stone-800 bg-stone-900/50'
-                    : 'border-stone-200 bg-stone-100'
-                "
+                class="px-4 py-3 border-b border-stone-200 bg-stone-100 flex flex-shrink-0 items-center justify-between dark:border-stone-800 dark:bg-stone-900/50 lg:hidden"
               >
                 <span
-                  class="text-sm font-medium"
-                  :class="isDark ? 'text-stone-200' : 'text-stone-800'"
+                  class="text-sm text-stone-800 font-medium dark:text-stone-200"
                 >
                   Chat
                 </span>
                 <button
-                  class="p-1 rounded"
-                  :class="
-                    isDark
-                      ? 'text-stone-400 hover:bg-stone-800'
-                      : 'text-stone-600 hover:bg-stone-200'
-                  "
+                  class="text-stone-600 p-1 rounded dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-stone-800"
                   @click="showChat = false"
                 >
                   <div class="i-ph-x text-lg" />

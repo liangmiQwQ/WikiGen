@@ -3,7 +3,7 @@ import { RouterLink, useRoute } from "vue-router";
 import { useDarkTheme } from "../../composables/dark-theme";
 
 const route = useRoute();
-const { isDark, animatedToggleTheme } = useDarkTheme();
+const { animatedToggleTheme } = useDarkTheme();
 
 const navItems = [
   { path: "/", label: "Chat", icon: "i-ph-chat-circle-text" },
@@ -13,16 +13,12 @@ const navItems = [
 </script>
 
 <template>
-  <header
-    class="border-b h-16"
-    :class="isDark ? 'border-stone-800' : 'border-stone-200'"
-  >
+  <header class="border-b border-stone-200 h-16 dark:border-stone-800">
     <div
       class="mx-auto px-4 flex h-full max-w-7xl items-center justify-between md:px-6"
     >
       <div
-        class="text-xl font-semibold flex gap-3 items-center"
-        :class="isDark ? 'text-stone-100' : 'text-stone-900'"
+        class="text-xl text-stone-900 font-semibold flex gap-3 items-center dark:text-stone-100"
       >
         <div class="i-ph-article-ny-times text-3xl" />
         <span>WikiGen</span>
@@ -36,12 +32,8 @@ const navItems = [
             class="text-sm font-medium px-3 py-2 rounded-md flex gap-1.5 items-center md:px-4"
             :class="
               route.path === item.path
-                ? isDark
-                  ? 'bg-stone-800 text-stone-100'
-                  : 'bg-stone-200 text-stone-900'
-                : isDark
-                  ? 'text-stone-400 hover:bg-stone-800 hover:text-stone-200'
-                  : 'text-stone-500 hover:bg-stone-100 hover:text-stone-900'
+                ? 'bg-stone-200 text-stone-900 dark:bg-stone-800 dark:text-stone-100'
+                : 'text-stone-500 hover:bg-stone-100 hover:text-stone-900 dark:text-stone-400 dark:hover:bg-stone-800 dark:hover:text-stone-200'
             "
           >
             <div :class="item.icon" class="text-lg" />
@@ -49,12 +41,7 @@ const navItems = [
           </RouterLink>
         </nav>
         <button
-          class="ml-2 p-2 rounded-md"
-          :class="
-            isDark
-              ? 'text-stone-400 hover:bg-stone-800 hover:text-stone-200'
-              : 'text-stone-500 hover:bg-stone-100 hover:text-stone-900'
-          "
+          class="text-stone-500 ml-2 p-2 rounded-md dark:text-stone-400 hover:text-stone-900 hover:bg-stone-100 dark:hover:text-stone-200 dark:hover:bg-stone-800"
           @click="animatedToggleTheme"
         >
           <div i-ph-moon-stars-duotone dark:i-ph-sun-dim-duotone text-xl />
