@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from "vue";
 import { useDarkTheme } from "../composables/dark-theme";
 import { useSettings } from "../composables/settings";
 import type { AIProvider } from "../types";
@@ -8,61 +9,77 @@ const { isDark } = useDarkTheme();
 
 const providers: { value: AIProvider; label: string }[] = [
   { value: "deepseek", label: "DeepSeek" },
-  { value: "kimi", label: "Kimi (Moonshot AI)" },
+  { value: "moonshot-cn", label: "Moonshot AI (China)" },
+  { value: "moonshot", label: "Moonshot AI" },
 ];
+
+const providerLinks: Record<AIProvider, { url: string; label: string }> = {
+  deepseek: { url: "https://platform.deepseek.com/", label: "DeepSeek" },
+  "moonshot-cn": {
+    url: "https://platform.moonshot.cn/",
+    label: "Moonshot AI (China)",
+  },
+  moonshot: { url: "https://platform.moonshot.com/", label: "Moonshot AI" },
+};
+
+const theme = computed(() => ({
+  card: isDark.value
+    ? "bg-stone-900 border-stone-800"
+    : "bg-white border-stone-200",
+  title: isDark.value ? "text-stone-100" : "text-stone-900",
+  subtitle: isDark.value ? "text-stone-200" : "text-stone-900",
+  label: isDark.value ? "text-stone-300" : "text-stone-700",
+  input: isDark.value
+    ? "bg-stone-900 border-stone-700 text-stone-200 focus:border-stone-500 placeholder-stone-600"
+    : "bg-white border-stone-300 text-stone-900 focus:border-stone-500 placeholder-stone-400",
+  hint: "text-stone-500",
+  link: isDark.value ? "text-stone-400" : "text-stone-600",
+  button: isDark.value
+    ? "bg-stone-800 border-stone-700 text-stone-300 hover:bg-stone-700 hover:text-stone-200"
+    : "bg-stone-100 border-stone-300 text-stone-700 hover:bg-stone-200",
+  divider: isDark.value ? "border-stone-800" : "border-stone-200",
+}));
+
+const currentApiKey = computed({
+  get: () => settings.value.apiKeys[settings.value.provider],
+  set: (value: string) => {
+    updateApiKey(settings.value.provider, value);
+  },
+});
+
+const currentProviderLink = computed(
+  () => providerLinks[settings.value.provider],
+);
 
 function handleProviderChange(e: Event) {
   const target = e.target as HTMLSelectElement;
   updateProvider(target.value as AIProvider);
 }
-
-function handleApiKeyChange(e: Event) {
-  const target = e.target as HTMLInputElement;
-  updateApiKey(target.value);
-}
 </script>
 
 <template>
   <div class="mx-auto p-4 max-w-3xl md:p-8">
-    <div
-      class="mb-6 p-6 border rounded-lg"
-      :class="
-        isDark ? 'bg-stone-900 border-stone-800' : 'bg-white border-stone-200'
-      "
-    >
-      <h1
-        class="text-xl font-semibold mb-6 md:text-2xl"
-        :class="isDark ? 'text-stone-100' : 'text-stone-900'"
-      >
+    <div class="mb-6 p-6 border rounded-lg" :class="theme.card">
+      <h1 class="text-xl font-semibold mb-6 md:text-2xl" :class="theme.title">
         Settings
       </h1>
 
       <div class="mb-8">
         <h2
           class="text-base font-semibold mb-4 pb-3 border-b"
-          :class="
-            isDark
-              ? 'text-stone-200 border-stone-800'
-              : 'text-stone-900 border-stone-200'
-          "
+          :class="[theme.subtitle, theme.divider]"
         >
           AI Provider
         </h2>
 
         <div class="mb-6">
-          <label
-            class="text-sm font-medium mb-2 block"
-            :class="isDark ? 'text-stone-300' : 'text-stone-700'"
-            >Select Provider</label
-          >
+          <label class="text-sm font-medium mb-2 block" :class="theme.label">
+            Select Provider
+          </label>
           <select
             :value="settings.provider"
             class="text-sm px-3.5 py-2.5 border rounded-lg w-full focus:outline-none"
-            :class="
-              isDark
-                ? 'bg-stone-900 border-stone-700 text-stone-200 focus:border-stone-500'
-                : 'bg-white border-stone-300 text-stone-900 focus:border-stone-500'
-            "
+            :class="theme.input"
             @change="handleProviderChange"
           >
             <option
@@ -73,58 +90,34 @@ function handleApiKeyChange(e: Event) {
               {{ provider.label }}
             </option>
           </select>
-          <p
-            class="text-xs mt-2"
-            :class="isDark ? 'text-stone-500' : 'text-stone-500'"
-          >
+          <p class="text-xs mt-2" :class="theme.hint">
             Choose your preferred AI service for generating websites
           </p>
         </div>
 
         <div class="mb-6">
-          <label
-            class="text-sm font-medium mb-2 block"
-            :class="isDark ? 'text-stone-300' : 'text-stone-700'"
-            >API Key</label
-          >
+          <label class="text-sm font-medium mb-2 block" :class="theme.label">
+            API Key
+          </label>
           <input
+            v-model="currentApiKey"
             type="password"
-            :value="settings.apiKey"
             placeholder="Enter your API key"
             class="text-sm px-3.5 py-2.5 border rounded-lg w-full focus:outline-none"
-            :class="
-              isDark
-                ? 'bg-stone-900 border-stone-700 text-stone-200 placeholder-stone-600 focus:border-stone-500'
-                : 'bg-white border-stone-300 text-stone-900 placeholder-stone-400 focus:border-stone-500'
-            "
-            @input="handleApiKeyChange"
+            :class="theme.input"
           />
-          <p
-            class="text-xs mt-2"
-            :class="isDark ? 'text-stone-500' : 'text-stone-500'"
-          >
+          <p class="text-xs mt-2" :class="theme.hint">
             Your API key is stored locally in your browser
           </p>
           <div class="mt-2">
             <a
-              v-if="settings.provider === 'deepseek'"
-              href="https://platform.deepseek.com/"
+              :href="currentProviderLink.url"
               target="_blank"
               rel="noopener"
               class="text-xs hover:underline"
-              :class="isDark ? 'text-stone-400' : 'text-stone-600'"
+              :class="theme.link"
             >
-              Get DeepSeek API Key →
-            </a>
-            <a
-              v-else
-              href="https://platform.moonshot.cn/"
-              target="_blank"
-              rel="noopener"
-              class="text-xs hover:underline"
-              :class="isDark ? 'text-stone-400' : 'text-stone-600'"
-            >
-              Get Kimi API Key →
+              Get {{ currentProviderLink.label }} API Key →
             </a>
           </div>
         </div>
@@ -133,30 +126,19 @@ function handleApiKeyChange(e: Event) {
       <div>
         <h2
           class="text-base font-semibold mb-4 pb-3 border-b"
-          :class="
-            isDark
-              ? 'text-stone-200 border-stone-800'
-              : 'text-stone-900 border-stone-200'
-          "
+          :class="[theme.subtitle, theme.divider]"
         >
           Data Management
         </h2>
         <div class="mb-4">
           <button
             class="text-sm font-medium px-4 py-2 border rounded-lg"
-            :class="
-              isDark
-                ? 'bg-stone-800 border-stone-700 text-stone-300 hover:bg-stone-700 hover:text-stone-200'
-                : 'bg-stone-100 border-stone-300 text-stone-700 hover:bg-stone-200'
-            "
+            :class="theme.button"
             @click="resetSettings"
           >
             Reset All Settings
           </button>
-          <p
-            class="text-xs mt-2"
-            :class="isDark ? 'text-stone-500' : 'text-stone-500'"
-          >
+          <p class="text-xs mt-2" :class="theme.hint">
             This will reset all settings to their default values
           </p>
         </div>

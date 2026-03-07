@@ -83,13 +83,155 @@ IMPORTANT: Wrap your complete HTML code in triple backticks with the html langua
 \`\`\``;
 }
 
+async function streamDeepseek(
+  message: string,
+  apiKey: string,
+  callbacks: StreamCallbacks,
+) {
+  const response = await fetch("https://api.deepseek.com/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model: "deepseek-chat",
+      messages: [
+        {
+          role: "system",
+          content:
+            "You are an expert web developer specializing in creating educational and knowledge-based websites. You create clean, modern, responsive HTML websites with excellent user experience. Always provide complete, self-contained HTML code that can be directly rendered in a browser.",
+        },
+        { role: "user", content: message },
+      ],
+      stream: true,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`DeepSeek API error: ${response.status}`);
+  }
+
+  const reader = response.body?.getReader();
+  if (!reader) throw new Error("No reader available");
+
+  const decoder = new TextDecoder();
+  let buffer = "";
+
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split("\n");
+      buffer = lines.pop() || "";
+
+      for (const line of lines) {
+        if (line.startsWith("data: ")) {
+          const data = line.slice(6);
+          if (data === "[DONE]") {
+            callbacks.onComplete();
+            return;
+          }
+          try {
+            const parsed = JSON.parse(data);
+            const content = parsed.choices?.[0]?.delta?.content;
+            if (content) {
+              callbacks.onChunk(content);
+            }
+          } catch {
+            // Ignore parsing errors for incomplete chunks
+          }
+        }
+      }
+    }
+    callbacks.onComplete();
+  } finally {
+    reader.releaseLock();
+  }
+}
+
+async function streamMoonshot(
+  message: string,
+  apiKey: string,
+  endpoint: string,
+  callbacks: StreamCallbacks,
+) {
+  const response = await fetch(endpoint, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model: "moonshot-v1-8k",
+      messages: [
+        {
+          role: "system",
+          content:
+            "You are an expert web developer specializing in creating educational and knowledge-based websites. You create clean, modern, responsive HTML websites with excellent user experience. Always provide complete, self-contained HTML code that can be directly rendered in a browser.",
+        },
+        { role: "user", content: message },
+      ],
+      stream: true,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Moonshot API error: ${response.status}`);
+  }
+
+  const reader = response.body?.getReader();
+  if (!reader) throw new Error("No reader available");
+
+  const decoder = new TextDecoder();
+  let buffer = "";
+
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split("\n");
+      buffer = lines.pop() || "";
+
+      for (const line of lines) {
+        if (line.startsWith("data: ")) {
+          const data = line.slice(6);
+          if (data === "[DONE]") {
+            callbacks.onComplete();
+            return;
+          }
+          try {
+            const parsed = JSON.parse(data);
+            const content = parsed.choices?.[0]?.delta?.content;
+            if (content) {
+              callbacks.onChunk(content);
+            }
+          } catch {
+            // Ignore parsing errors for incomplete chunks
+          }
+        }
+      }
+    }
+    callbacks.onComplete();
+  } finally {
+    reader.releaseLock();
+  }
+}
+
 export function useAI() {
-  const { settings } = useSettings();
+  const { settings, getCurrentApiKey } = useSettings();
   const isStreaming = ref(false);
 
   async function streamChat(message: string, callbacks: StreamCallbacks) {
-    if (!settings.value.apiKey) {
-      callbacks.onError(new Error("API key not configured"));
+    const apiKey = getCurrentApiKey();
+    if (!apiKey) {
+      callbacks.onError(
+        new Error("API key not configured for the selected provider"),
+      );
       return;
     }
 
@@ -97,9 +239,21 @@ export function useAI() {
 
     try {
       if (settings.value.provider === "deepseek") {
-        await streamDeepseek(message, callbacks);
+        await streamDeepseek(message, apiKey, callbacks);
+      } else if (settings.value.provider === "moonshot-cn") {
+        await streamMoonshot(
+          message,
+          apiKey,
+          "https://api.moonshot.cn/v1/chat/completions",
+          callbacks,
+        );
       } else {
-        await streamKimi(message, callbacks);
+        await streamMoonshot(
+          message,
+          apiKey,
+          "https://api.moonshot.com/v1/chat/completions",
+          callbacks,
+        );
       }
     } catch (error) {
       callbacks.onError(error as Error);
@@ -128,139 +282,6 @@ export function useAI() {
       conversationHistory,
     );
     await streamChat(prompt, callbacks);
-  }
-
-  async function streamDeepseek(message: string, callbacks: StreamCallbacks) {
-    const response = await fetch("https://api.deepseek.com/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${settings.value.apiKey}`,
-      },
-      body: JSON.stringify({
-        model: "deepseek-chat",
-        messages: [
-          {
-            role: "system",
-            content:
-              "You are an expert web developer specializing in creating educational and knowledge-based websites. You create clean, modern, responsive HTML websites with excellent user experience. Always provide complete, self-contained HTML code that can be directly rendered in a browser.",
-          },
-          { role: "user", content: message },
-        ],
-        stream: true,
-      }),
-    });
-
-    if (!response.ok) {
-      throw new Error(`DeepSeek API error: ${response.status}`);
-    }
-
-    const reader = response.body?.getReader();
-    if (!reader) throw new Error("No reader available");
-
-    const decoder = new TextDecoder();
-    let buffer = "";
-
-    try {
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split("\n");
-        buffer = lines.pop() || "";
-
-        for (const line of lines) {
-          if (line.startsWith("data: ")) {
-            const data = line.slice(6);
-            if (data === "[DONE]") {
-              callbacks.onComplete();
-              return;
-            }
-            try {
-              const parsed = JSON.parse(data);
-              const content = parsed.choices?.[0]?.delta?.content;
-              if (content) {
-                callbacks.onChunk(content);
-              }
-            } catch {
-              // Ignore parsing errors for incomplete chunks
-            }
-          }
-        }
-      }
-      callbacks.onComplete();
-    } finally {
-      reader.releaseLock();
-    }
-  }
-
-  async function streamKimi(message: string, callbacks: StreamCallbacks) {
-    const response = await fetch(
-      "https://api.moonshot.cn/v1/chat/completions",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${settings.value.apiKey}`,
-        },
-        body: JSON.stringify({
-          model: "moonshot-v1-8k",
-          messages: [
-            {
-              role: "system",
-              content:
-                "You are an expert web developer specializing in creating educational and knowledge-based websites. You create clean, modern, responsive HTML websites with excellent user experience. Always provide complete, self-contained HTML code that can be directly rendered in a browser.",
-            },
-            { role: "user", content: message },
-          ],
-          stream: true,
-        }),
-      },
-    );
-
-    if (!response.ok) {
-      throw new Error(`Kimi API error: ${response.status}`);
-    }
-
-    const reader = response.body?.getReader();
-    if (!reader) throw new Error("No reader available");
-
-    const decoder = new TextDecoder();
-    let buffer = "";
-
-    try {
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split("\n");
-        buffer = lines.pop() || "";
-
-        for (const line of lines) {
-          if (line.startsWith("data: ")) {
-            const data = line.slice(6);
-            if (data === "[DONE]") {
-              callbacks.onComplete();
-              return;
-            }
-            try {
-              const parsed = JSON.parse(data);
-              const content = parsed.choices?.[0]?.delta?.content;
-              if (content) {
-                callbacks.onChunk(content);
-              }
-            } catch {
-              // Ignore parsing errors for incomplete chunks
-            }
-          }
-        }
-      }
-      callbacks.onComplete();
-    } finally {
-      reader.releaseLock();
-    }
   }
 
   return {

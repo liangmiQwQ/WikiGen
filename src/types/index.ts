@@ -38,12 +38,18 @@ export interface Project {
   createdAt: number;
 }
 
-export interface Settings {
-  provider: "kimi" | "deepseek";
-  apiKey: string;
+export interface ApiKeys {
+  deepseek: string;
+  "moonshot-cn": string;
+  moonshot: string;
 }
 
-export type AIProvider = "kimi" | "deepseek";
+export interface Settings {
+  provider: AIProvider;
+  apiKeys: ApiKeys;
+}
+
+export type AIProvider = "deepseek" | "moonshot-cn" | "moonshot";
 
 export interface WebsiteFormData {
   topic: string;
