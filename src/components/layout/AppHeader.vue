@@ -17,12 +17,16 @@ const navItems = [
     <div
       class="mx-auto px-4 flex h-full max-w-7xl items-center justify-between md:px-6"
     >
-      <div
+      <a
         class="text-xl text-stone-900 font-semibold flex gap-3 items-center dark:text-stone-100"
+        cursor-pointer
+        select-none
+        href="https://github.com/liangmiQwQ/WikiGen"
+        target="_blank"
       >
         <div class="i-ph-article-ny-times text-3xl" />
         <span>WikiGen</span>
-      </div>
+      </a>
       <div class="flex gap-2 items-center">
         <nav class="flex gap-1">
           <RouterLink

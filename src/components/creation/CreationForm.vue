@@ -1,10 +1,12 @@
 <script setup lang="ts">
-import { reactive } from "vue";
+import { reactive, ref } from "vue";
 import type { WebsiteFormData } from "../../types";
 
 const emit = defineEmits<{
   submit: [data: WebsiteFormData];
 }>();
+
+const showAdvanced = ref(false);
 
 const formData = reactive<WebsiteFormData>({
   topic: "",
@@ -50,7 +52,10 @@ function handleSubmit() {
     <div class="mx-auto max-w-2xl">
       <div class="mb-8 text-center">
         <div
-          class="text-3xl text-stone-600 mx-auto mb-4 rounded-2xl bg-stone-200 flex h-16 w-16 items-center justify-center dark:text-stone-300 dark:bg-stone-800"
+          border
+          border-stone-400
+          dark:border-stone-600
+          class="text-3xl text-stone-600 mx-auto mb-4 rounded-2xl flex h-16 w-16 items-center justify-center dark:text-stone-300"
         >
           <div class="i-ph-book-open-text text-2xl" />
         </div>
@@ -84,45 +89,6 @@ function handleSubmit() {
           />
         </div>
 
-        <!-- Target Audience -->
-        <div class="space-y-2">
-          <label class="text-sm font-medium flex gap-2 items-center">
-            <div class="i-ph-users text-lg" />
-            Target Audience
-          </label>
-          <input
-            v-model="formData.targetAudience"
-            type="text"
-            placeholder="e.g., High school students, professionals, general public..."
-            class="text-sm text-stone-900 px-4 py-3 border border-stone-300 rounded-lg bg-white w-full transition-colors dark:text-stone-100 focus:outline-none dark:border-stone-600 focus:border-stone-500 dark:bg-stone-800/50 dark:focus:border-stone-400 placeholder-stone-400 dark:placeholder-stone-500"
-            required
-          />
-        </div>
-
-        <!-- Key Sections -->
-        <div class="space-y-3">
-          <label class="text-sm font-medium flex gap-2 items-center">
-            <div class="i ph-list-checks text-lg" />
-            Key Sections to Include
-          </label>
-          <div class="flex flex-wrap gap-2">
-            <button
-              v-for="section in sectionOptions"
-              :key="section.value"
-              type="button"
-              class="text-sm px-4 py-2 border rounded-full transition-all"
-              :class="
-                formData.keySections.includes(section.value)
-                  ? 'border-stone-600 bg-stone-300 text-stone-900 dark:border-stone-500 dark:bg-stone-600 dark:text-stone-100'
-                  : 'border-stone-300 text-stone-600 hover:border-stone-400 hover:text-stone-800 dark:border-stone-600 dark:text-stone-400 dark:hover:border-stone-500 dark:hover:text-stone-300'
-              "
-              @click="toggleSection(section.value)"
-            >
-              {{ section.label }}
-            </button>
-          </div>
-        </div>
-
         <!-- Style Preference -->
         <div class="space-y-3">
           <label class="text-sm font-medium flex gap-2 items-center">
@@ -151,7 +117,7 @@ function handleSubmit() {
         <!-- Additional Requirements -->
         <div class="space-y-2">
           <label class="text-sm font-medium flex gap-2 items-center">
-            <div class="i ph-notebook text-lg" />
+            <div class="i-ph-notebook text-lg" />
             Additional Requirements
           </label>
           <textarea
@@ -162,13 +128,68 @@ function handleSubmit() {
           />
         </div>
 
+        <!-- Advanced Options -->
+        <div class="space-y-4">
+          <button
+            type="button"
+            class="text-sm text-stone-600 flex gap-2 w-full transition-colors items-center dark:text-stone-400 hover:text-stone-800 dark:hover:text-stone-300"
+            @click="showAdvanced = !showAdvanced"
+          >
+            <div
+              :class="showAdvanced ? 'i-ph-caret-down' : 'i-ph-caret-right'"
+              class="text-lg"
+            />
+            Advanced Options
+          </button>
+
+          <div v-show="showAdvanced" class="space-y-6">
+            <!-- Target Audience -->
+            <div class="space-y-2">
+              <label class="text-sm font-medium flex gap-2 items-center">
+                <div class="i-ph-users text-lg" />
+                Target Audience
+              </label>
+              <input
+                v-model="formData.targetAudience"
+                type="text"
+                placeholder="e.g., High school students, professionals, general public..."
+                class="text-sm text-stone-900 px-4 py-3 border border-stone-300 rounded-lg bg-white w-full transition-colors dark:text-stone-100 focus:outline-none dark:border-stone-600 focus:border-stone-500 dark:bg-stone-800/50 dark:focus:border-stone-400 placeholder-stone-400 dark:placeholder-stone-500"
+              />
+            </div>
+
+            <!-- Key Sections -->
+            <div class="space-y-3">
+              <label class="text-sm font-medium flex gap-2 items-center">
+                <div class="i-ph-list-checks text-lg" />
+                Key Sections to Include
+              </label>
+              <div class="flex flex-wrap gap-2">
+                <button
+                  v-for="section in sectionOptions"
+                  :key="section.value"
+                  type="button"
+                  class="text-sm px-4 py-2 border rounded-full transition-all"
+                  :class="
+                    formData.keySections.includes(section.value)
+                      ? 'border-stone-600 bg-stone-300 text-stone-900 dark:border-stone-500 dark:bg-stone-600 dark:text-stone-100'
+                      : 'border-stone-300 text-stone-600 hover:border-stone-400 hover:text-stone-800 dark:border-stone-600 dark:text-stone-400 dark:hover:border-stone-500 dark:hover:text-stone-300'
+                  "
+                  @click="toggleSection(section.value)"
+                >
+                  {{ section.label }}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Submit Button -->
         <button
           type="submit"
           class="text-sm text-stone-800 font-medium py-3 border border-stone-500 rounded-lg bg-stone-50 flex gap-2 w-full transition-all items-center justify-center dark:text-stone-200 dark:border-stone-400 dark:bg-stone-800 disabled:opacity-50 disabled:cursor-not-allowed"
           :disabled="!formData.topic.trim()"
         >
-          <div class="i ph-magic-wand text-lg" />
+          <div class="i-ph-magic-wand text-lg" />
           Generate Website
         </button>
       </form>

@@ -69,7 +69,7 @@ function getPreviewUrl(html: string): string {
           "
           @click="activeTab = 'grid'"
         >
-          <div class="i ph-squares-four text-lg" />
+          <div class="i-ph-squares-four text-lg" />
         </button>
         <button
           class="p-2 rounded-md"
