@@ -2,6 +2,10 @@ html.dark {
   color-scheme: dark;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 ::view-transition-old(root),
 ::view-transition-new(root) {
   animation: none;
@@ -18,8 +22,4 @@ html.dark {
 }
 .dark::view-transition-new(root) {
   z-index: 1;
-}
-
-::selection {
-  --at-apply: 'primary';
 }

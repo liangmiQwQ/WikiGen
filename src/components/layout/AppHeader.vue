@@ -1,16 +1,9 @@
 <script setup lang="ts">
-import { computed } from "vue";
 import { RouterLink, useRoute } from "vue-router";
 import { useSettings } from "../../composables/settings";
 
 const route = useRoute();
-const { settings, updateTheme } = useSettings();
-
-const isDark = computed(() => settings.value.theme === "dark");
-
-function toggleTheme() {
-  updateTheme(isDark.value ? "light" : "dark");
-}
+const { isDark, toggleTheme } = useSettings();
 
 const navItems = [
   { path: "/", label: "Chat", icon: "i-ph-chat-circle-text" },
@@ -68,7 +61,7 @@ const navItems = [
               ? 'text-stone-400 hover:bg-stone-800 hover:text-stone-200'
               : 'text-stone-500 hover:bg-stone-100 hover:text-stone-900'
           "
-          @click="toggleTheme"
+          @click="toggleTheme($event)"
         >
           <div i-ph-moon-stars-duotone dark:i-ph-sun-dim-duotone text-xl />
         </button>
