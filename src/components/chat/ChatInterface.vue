@@ -2,7 +2,7 @@
 import { computed, nextTick, ref } from "vue";
 import { useAI } from "../../composables/ai";
 import { useChat } from "../../composables/chat";
-import { useSettings } from "../../composables/settings";
+import { useDarkTheme } from "../../composables/dark-theme";
 import ChatInput from "./ChatInput.vue";
 import ChatMessage from "./ChatMessage.vue";
 
@@ -13,12 +13,11 @@ const {
   createConversation,
   extractHtmlFromMessage,
 } = useChat();
-const { settings } = useSettings();
+const { isDark } = useDarkTheme();
 const { streamChat, isStreaming } = useAI();
 const messagesContainer = ref<HTMLElement>();
 
 const messages = computed(() => currentConversation.value?.messages || []);
-const isDark = computed(() => settings.value.theme === "dark");
 
 async function scrollToBottom() {
   await nextTick();

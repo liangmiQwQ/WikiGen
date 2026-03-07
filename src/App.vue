@@ -1,12 +1,9 @@
 <script setup lang="ts">
-import { computed } from "vue";
 import { RouterView } from "vue-router";
 import AppHeader from "./components/layout/AppHeader.vue";
-import { useSettings } from "./composables/settings";
+import { useDarkTheme } from "./composables/dark-theme";
 
-const { settings } = useSettings();
-
-const isDark = computed(() => settings.value.theme === "dark");
+const { isDark } = useDarkTheme();
 </script>
 
 <template>

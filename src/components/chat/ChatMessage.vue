@@ -1,15 +1,14 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import { useSettings } from "../../composables/settings";
+import { useDarkTheme } from "../../composables/dark-theme";
 import type { Message } from "../../types";
 
 const props = defineProps<{
   message: Message;
 }>();
 
-const { settings } = useSettings();
+const { isDark } = useDarkTheme();
 const isUser = computed(() => props.message.role === "user");
-const isDark = computed(() => settings.value.theme === "dark");
 
 function formatMarkdown(content: string): string {
   const codeBg = isDark.value ? "bg-stone-800" : "bg-stone-200";

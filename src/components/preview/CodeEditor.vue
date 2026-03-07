@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { ref } from "vue";
+import { useDarkTheme } from "../../composables/dark-theme";
 import { useProjects } from "../../composables/projects";
-import { useSettings } from "../../composables/settings";
 import type { Project } from "../../types";
 
 const props = defineProps<{
@@ -9,12 +9,10 @@ const props = defineProps<{
 }>();
 
 const { deleteProject } = useProjects();
-const { settings } = useSettings();
+const { isDark } = useDarkTheme();
 
 const activeTab = ref<"preview" | "code">("preview");
 const showDeleteConfirm = ref(false);
-
-const isDark = computed(() => settings.value.theme === "dark");
 
 const previewUrl = computed(() => {
   const blob = new Blob([props.project.html], { type: "text/html" });

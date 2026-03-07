@@ -26,7 +26,6 @@ export interface Project {
 export interface Settings {
   provider: "kimi" | "deepseek";
   apiKey: string;
-  theme: "light" | "dark";
 }
 
 export type AIProvider = "kimi" | "deepseek";

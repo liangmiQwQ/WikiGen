@@ -1,16 +1,14 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
-import { useSettings } from "../../composables/settings";
+import { useDarkTheme } from "../../composables/dark-theme";
 import type { Message } from "../../types";
 
 const props = defineProps<{
   messages: Message[];
 }>();
 
-const { settings } = useSettings();
+const { isDark } = useDarkTheme();
 const activeTab = ref<"preview" | "code">("preview");
-
-const isDark = computed(() => settings.value.theme === "dark");
 
 const latestHtml = computed(() => {
   for (let i = props.messages.length - 1; i >= 0; i--) {

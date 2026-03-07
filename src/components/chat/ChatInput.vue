@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
-import { useSettings } from "../../composables/settings";
+import { ref } from "vue";
+import { useDarkTheme } from "../../composables/dark-theme";
 
 const props = defineProps<{
   disabled?: boolean;
@@ -10,8 +10,7 @@ const emit = defineEmits<{
   send: [content: string];
 }>();
 
-const { settings } = useSettings();
-const isDark = computed(() => settings.value.theme === "dark");
+const { isDark } = useDarkTheme();
 
 const input = ref("");
 

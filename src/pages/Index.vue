@@ -3,14 +3,13 @@ import { computed } from "vue";
 import ChatInterface from "../components/chat/ChatInterface.vue";
 import WebsitePreview from "../components/preview/WebsitePreview.vue";
 import { useChat } from "../composables/chat";
-import { useSettings } from "../composables/settings";
+import { useDarkTheme } from "../composables/dark-theme";
 
 const { currentConversation, createConversation, currentConversationId } =
   useChat();
-const { settings } = useSettings();
+const { isDark } = useDarkTheme();
 
 const messages = computed(() => currentConversation.value?.messages || []);
-const isDark = computed(() => settings.value.theme === "dark");
 
 if (!currentConversationId.value) {
   createConversation();

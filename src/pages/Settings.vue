@@ -1,21 +1,14 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { useDarkTheme } from "../composables/dark-theme";
 import { useSettings } from "../composables/settings";
 import type { AIProvider } from "../types";
 
-const { settings, updateProvider, updateApiKey, updateTheme, resetSettings } =
-  useSettings();
-
-const isDark = computed(() => settings.value.theme === "dark");
+const { settings, updateProvider, updateApiKey, resetSettings } = useSettings();
+const { isDark } = useDarkTheme();
 
 const providers: { value: AIProvider; label: string }[] = [
   { value: "deepseek", label: "DeepSeek" },
   { value: "kimi", label: "Kimi (Moonshot AI)" },
-];
-
-const themes: { value: "light" | "dark"; label: string; icon: string }[] = [
-  { value: "light", label: "Light", icon: "i-ph-sun" },
-  { value: "dark", label: "Dark", icon: "i-ph-moon" },
 ];
 
 function handleProviderChange(e: Event) {
@@ -26,10 +19,6 @@ function handleProviderChange(e: Event) {
 function handleApiKeyChange(e: Event) {
   const target = e.target as HTMLInputElement;
   updateApiKey(target.value);
-}
-
-function handleThemeChange(theme: "light" | "dark") {
-  updateTheme(theme);
 }
 </script>
 
@@ -47,53 +36,6 @@ function handleThemeChange(theme: "light" | "dark") {
       >
         Settings
       </h1>
-
-      <div class="mb-8">
-        <h2
-          class="text-base font-semibold mb-4 pb-3 border-b"
-          :class="
-            isDark
-              ? 'text-stone-200 border-stone-800'
-              : 'text-stone-900 border-stone-200'
-          "
-        >
-          Appearance
-        </h2>
-
-        <div class="mb-6">
-          <label
-            class="text-sm font-medium mb-2 block"
-            :class="isDark ? 'text-stone-300' : 'text-stone-700'"
-            >Theme</label
-          >
-          <div class="flex gap-3">
-            <button
-              v-for="theme in themes"
-              :key="theme.value"
-              class="px-4 py-3 border rounded-lg flex flex-1 gap-2 items-center justify-center"
-              :class="
-                settings.theme === theme.value
-                  ? isDark
-                    ? 'bg-stone-800 border-stone-600 text-stone-200'
-                    : 'bg-stone-100 border-stone-400 text-stone-800'
-                  : isDark
-                    ? 'bg-stone-900 border-stone-700 text-stone-400 hover:bg-stone-800 hover:text-stone-300'
-                    : 'bg-white border-stone-300 text-stone-600 hover:bg-stone-50 hover:text-stone-800'
-              "
-              @click="handleThemeChange(theme.value)"
-            >
-              <div :class="theme.icon" class="text-lg" />
-              <span class="text-sm font-medium">{{ theme.label }}</span>
-            </button>
-          </div>
-          <p
-            class="text-xs mt-2"
-            :class="isDark ? 'text-stone-500' : 'text-stone-500'"
-          >
-            Choose your preferred color theme
-          </p>
-        </div>
-      </div>
 
       <div class="mb-8">
         <h2

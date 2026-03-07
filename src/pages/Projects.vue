@@ -2,15 +2,14 @@
 import { computed } from "vue";
 import { useRouter } from "vue-router";
 import CodeEditor from "../components/preview/CodeEditor.vue";
+import { useDarkTheme } from "../composables/dark-theme";
 import { useProjects } from "../composables/projects";
-import { useSettings } from "../composables/settings";
 
 const { projects } = useProjects();
-const { settings } = useSettings();
+const { isDark } = useDarkTheme();
 const router = useRouter();
 
 const hasProjects = computed(() => projects.value.length > 0);
-const isDark = computed(() => settings.value.theme === "dark");
 </script>
 
 <template>
