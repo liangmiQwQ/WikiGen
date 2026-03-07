@@ -17,3 +17,4 @@ This project use `vue@3.5` stable version with standard compiler.
 - **Icons**: Use Phosphor icons via UnoCSS (e.g., `i-ph-chat`, `i-ph-gear`). Available icons: https://icones.js.org/collection/ph
 - **Responsive**: Design for both mobile and desktop simultaneously using responsive breakpoints
 - **No emojis**: Use icons instead of emojis throughout the UI
+- **Theme color**: Use UnoCSS `stone` color as theme color.
