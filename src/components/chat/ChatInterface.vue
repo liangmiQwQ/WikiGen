@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { computed, nextTick, ref } from "vue";
-import { useAI } from "../../composables/use-ai";
-import { useChat } from "../../composables/use-chat";
+import { useAI } from "../../composables/ai";
+import { useChat } from "../../composables/chat";
+import { useSettings } from "../../composables/settings";
 import ChatInput from "./ChatInput.vue";
 import ChatMessage from "./ChatMessage.vue";
 
@@ -12,10 +13,12 @@ const {
   createConversation,
   extractHtmlFromMessage,
 } = useChat();
+const { settings } = useSettings();
 const { streamChat, isStreaming } = useAI();
 const messagesContainer = ref<HTMLElement>();
 
 const messages = computed(() => currentConversation.value?.messages || []);
+const isDark = computed(() => settings.value.theme === "dark");
 
 async function scrollToBottom() {
   await nextTick();
@@ -71,24 +74,41 @@ async function handleSend(content: string) {
 </script>
 
 <template>
-  <div class="bg-gray-50 flex flex-col h-full">
+  <div
+    class="flex flex-col h-full"
+    :class="isDark ? 'bg-stone-900' : 'bg-stone-50'"
+  >
     <div
       ref="messagesContainer"
       class="p-4 flex flex-1 flex-col gap-3 overflow-y-auto md:p-6 md:gap-4"
     >
       <div
         v-if="messages.length === 0"
-        class="text-gray-500 p-8 text-center flex flex-1 flex-col items-center justify-center"
+        class="p-8 text-center flex flex-1 flex-col items-center justify-center"
+        :class="isDark ? 'text-stone-500' : 'text-stone-500'"
       >
         <div
-          class="text-3xl text-indigo-600 mb-4 rounded-2xl bg-indigo-100 flex h-16 w-16 items-center justify-center"
+          class="text-3xl mb-4 rounded-2xl flex h-16 w-16 items-center justify-center"
+          :class="
+            isDark
+              ? 'bg-stone-800 text-stone-300'
+              : 'bg-stone-200 text-stone-600'
+          "
         >
           <div class="i-ph-chat-dots text-2xl" />
         </div>
-        <h3 class="text-lg text-gray-900 font-semibold mb-2">
+        <h3
+          class="text-lg font-semibold mb-2"
+          :class="isDark ? 'text-stone-100' : 'text-stone-900'"
+        >
           Start a conversation
         </h3>
-        <p class="text-sm">Ask me to create a website for you!</p>
+        <p
+          class="text-sm"
+          :class="isDark ? 'text-stone-400' : 'text-stone-600'"
+        >
+          Ask me to create a website for you!
+        </p>
       </div>
       <ChatMessage
         v-for="message in messages"
@@ -97,15 +117,18 @@ async function handleSend(content: string) {
       />
       <div v-if="isStreaming" class="p-3 flex gap-1 self-start">
         <span
-          class="rounded-full bg-gray-300 h-2 w-2 animate-bounce"
+          class="rounded-full h-2 w-2 animate-bounce"
+          :class="isDark ? 'bg-stone-600' : 'bg-stone-400'"
           style="animation-delay: 0ms"
         />
         <span
-          class="rounded-full bg-gray-300 h-2 w-2 animate-bounce"
+          class="rounded-full h-2 w-2 animate-bounce"
+          :class="isDark ? 'bg-stone-600' : 'bg-stone-400'"
           style="animation-delay: 150ms"
         />
         <span
-          class="rounded-full bg-gray-300 h-2 w-2 animate-bounce"
+          class="rounded-full h-2 w-2 animate-bounce"
+          :class="isDark ? 'bg-stone-600' : 'bg-stone-400'"
           style="animation-delay: 300ms"
         />
       </div>

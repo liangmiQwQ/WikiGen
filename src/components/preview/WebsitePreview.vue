@@ -1,12 +1,16 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
+import { useSettings } from "../../composables/settings";
 import type { Message } from "../../types";
 
 const props = defineProps<{
   messages: Message[];
 }>();
 
+const { settings } = useSettings();
 const activeTab = ref<"preview" | "code">("preview");
+
+const isDark = computed(() => settings.value.theme === "dark");
 
 const latestHtml = computed(() => {
   for (let i = props.messages.length - 1; i >= 0; i--) {
@@ -34,15 +38,29 @@ watch(previewUrl, (newUrl, oldUrl) => {
 </script>
 
 <template>
-  <div class="bg-white flex flex-col h-full">
-    <div class="px-4 py-3 border-b border-gray-200 bg-gray-50">
+  <div
+    class="flex flex-col h-full"
+    :class="isDark ? 'bg-stone-900' : 'bg-white'"
+  >
+    <div
+      class="px-4 py-3 border-b"
+      :class="
+        isDark
+          ? 'border-stone-800 bg-stone-800/50'
+          : 'border-stone-200 bg-stone-50'
+      "
+    >
       <div class="flex gap-1">
         <button
           class="text-sm font-medium px-3 py-2 rounded-md flex gap-1.5 items-center"
           :class="
             activeTab === 'preview'
-              ? 'bg-white text-blue-600 shadow-sm'
-              : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'
+              ? isDark
+                ? 'bg-stone-800 text-stone-200 shadow-sm'
+                : 'bg-white text-stone-800 shadow-sm'
+              : isDark
+                ? 'text-stone-500 hover:bg-stone-800 hover:text-stone-300'
+                : 'text-stone-500 hover:bg-stone-100 hover:text-stone-900'
           "
           @click="activeTab = 'preview'"
         >
@@ -53,8 +71,12 @@ watch(previewUrl, (newUrl, oldUrl) => {
           class="text-sm font-medium px-3 py-2 rounded-md flex gap-1.5 items-center"
           :class="
             activeTab === 'code'
-              ? 'bg-white text-blue-600 shadow-sm'
-              : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'
+              ? isDark
+                ? 'bg-stone-800 text-stone-200 shadow-sm'
+                : 'bg-white text-stone-800 shadow-sm'
+              : isDark
+                ? 'text-stone-500 hover:bg-stone-800 hover:text-stone-300'
+                : 'text-stone-500 hover:bg-stone-100 hover:text-stone-900'
           "
           @click="activeTab = 'code'"
         >
@@ -74,35 +96,65 @@ watch(previewUrl, (newUrl, oldUrl) => {
         />
         <div
           v-else
-          class="text-gray-400 p-8 text-center flex flex-col h-full w-full items-center justify-center"
+          class="p-8 text-center flex flex-col h-full w-full items-center justify-center"
+          :class="isDark ? 'text-stone-500' : 'text-stone-400'"
         >
           <div
-            class="text-2xl text-gray-400 mb-4 rounded-xl bg-gray-100 flex h-12 w-12 items-center justify-center"
+            class="text-2xl mb-4 rounded-xl flex h-12 w-12 items-center justify-center"
+            :class="
+              isDark
+                ? 'bg-stone-800 text-stone-500'
+                : 'bg-stone-100 text-stone-400'
+            "
           >
             <div class="i-ph-globe text-xl" />
           </div>
-          <p class="text-sm text-gray-500 font-medium mb-2">
+          <p
+            class="text-sm font-medium mb-2"
+            :class="isDark ? 'text-stone-400' : 'text-stone-500'"
+          >
             No website generated yet
           </p>
-          <span class="text-sm">Ask the AI to create a website for you</span>
+          <span
+            class="text-sm"
+            :class="isDark ? 'text-stone-500' : 'text-stone-400'"
+          >
+            Ask the AI to create a website for you
+          </span>
         </div>
       </div>
-      <div v-else class="bg-gray-900 h-full w-full overflow-auto">
+      <div
+        v-else
+        class="h-full w-full overflow-auto"
+        :class="isDark ? 'bg-stone-950' : 'bg-stone-900'"
+      >
         <pre
           v-if="latestHtml"
-          class="text-xs text-gray-200 leading-relaxed font-mono m-0 p-4 whitespace-pre-wrap break-all md:text-sm"
+          class="text-xs leading-relaxed font-mono m-0 p-4 whitespace-pre-wrap break-all md:text-sm"
+          :class="isDark ? 'text-stone-300' : 'text-stone-200'"
           >{{ latestHtml }}</pre
         >
         <div
           v-else
-          class="text-gray-400 p-8 text-center flex flex-col h-full w-full items-center justify-center"
+          class="p-8 text-center flex flex-col h-full w-full items-center justify-center"
+          :class="isDark ? 'text-stone-500' : 'text-stone-400'"
         >
           <div
-            class="text-2xl text-gray-400 mb-4 rounded-xl bg-gray-100 flex h-12 w-12 items-center justify-center"
+            class="text-2xl mb-4 rounded-xl flex h-12 w-12 items-center justify-center"
+            :class="
+              isDark
+                ? 'bg-stone-800 text-stone-500'
+                : 'bg-stone-100 text-stone-400'
+            "
           >
             <div class="i-ph-file-html text-xl" />
           </div>
-          <p class="text-sm text-gray-500 font-medium">No code available</p>
+          <p
+            class="text-sm font-medium"
+            :class="isDark ? 'text-stone-400' : 'text-stone-500'"
+          >
+            No code available
+          </p>
         </div>
       </div>
     </div>

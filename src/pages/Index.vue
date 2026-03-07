@@ -2,12 +2,15 @@
 import { computed } from "vue";
 import ChatInterface from "../components/chat/ChatInterface.vue";
 import WebsitePreview from "../components/preview/WebsitePreview.vue";
-import { useChat } from "../composables/use-chat";
+import { useChat } from "../composables/chat";
+import { useSettings } from "../composables/settings";
 
 const { currentConversation, createConversation, currentConversationId } =
   useChat();
+const { settings } = useSettings();
 
 const messages = computed(() => currentConversation.value?.messages || []);
+const isDark = computed(() => settings.value.theme === "dark");
 
 if (!currentConversationId.value) {
   createConversation();
@@ -20,7 +23,10 @@ if (!currentConversationId.value) {
       <div class="flex-1 h-1/2 min-w-0 lg:h-full lg:max-w-[60%]">
         <ChatInterface />
       </div>
-      <div class="bg-gray-200 flex-shrink-0 h-px lg:h-full lg:w-px" />
+      <div
+        class="flex-shrink-0 h-px lg:h-full lg:w-px"
+        :class="isDark ? 'bg-stone-800' : 'bg-stone-200'"
+      />
       <div class="flex-1 h-1/2 min-w-0 lg:h-full">
         <WebsitePreview :messages="messages" />
       </div>

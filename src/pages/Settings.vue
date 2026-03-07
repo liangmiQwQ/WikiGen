@@ -1,12 +1,21 @@
 <script setup lang="ts">
-import { useSettings } from "../composables/use-settings";
+import { computed } from "vue";
+import { useSettings } from "../composables/settings";
 import type { AIProvider } from "../types";
 
-const { settings, updateProvider, updateApiKey, resetSettings } = useSettings();
+const { settings, updateProvider, updateApiKey, updateTheme, resetSettings } =
+  useSettings();
+
+const isDark = computed(() => settings.value.theme === "dark");
 
 const providers: { value: AIProvider; label: string }[] = [
   { value: "deepseek", label: "DeepSeek" },
   { value: "kimi", label: "Kimi (Moonshot AI)" },
+];
+
+const themes: { value: "light" | "dark"; label: string; icon: string }[] = [
+  { value: "light", label: "Light", icon: "i-ph-sun" },
+  { value: "dark", label: "Dark", icon: "i-ph-moon" },
 ];
 
 function handleProviderChange(e: Event) {
@@ -18,29 +27,100 @@ function handleApiKeyChange(e: Event) {
   const target = e.target as HTMLInputElement;
   updateApiKey(target.value);
 }
+
+function handleThemeChange(theme: "light" | "dark") {
+  updateTheme(theme);
+}
 </script>
 
 <template>
   <div class="mx-auto p-4 max-w-3xl md:p-8">
-    <div class="mb-6 p-6 border border-gray-200 rounded-lg bg-white">
-      <h1 class="text-xl text-gray-900 font-semibold mb-6 md:text-2xl">
+    <div
+      class="mb-6 p-6 border rounded-lg"
+      :class="
+        isDark ? 'bg-stone-900 border-stone-800' : 'bg-white border-stone-200'
+      "
+    >
+      <h1
+        class="text-xl font-semibold mb-6 md:text-2xl"
+        :class="isDark ? 'text-stone-100' : 'text-stone-900'"
+      >
         Settings
       </h1>
 
       <div class="mb-8">
         <h2
-          class="text-base text-gray-900 font-semibold mb-4 pb-3 border-b border-gray-200"
+          class="text-base font-semibold mb-4 pb-3 border-b"
+          :class="
+            isDark
+              ? 'text-stone-200 border-stone-800'
+              : 'text-stone-900 border-stone-200'
+          "
+        >
+          Appearance
+        </h2>
+
+        <div class="mb-6">
+          <label
+            class="text-sm font-medium mb-2 block"
+            :class="isDark ? 'text-stone-300' : 'text-stone-700'"
+            >Theme</label
+          >
+          <div class="flex gap-3">
+            <button
+              v-for="theme in themes"
+              :key="theme.value"
+              class="px-4 py-3 border rounded-lg flex flex-1 gap-2 items-center justify-center"
+              :class="
+                settings.theme === theme.value
+                  ? isDark
+                    ? 'bg-stone-800 border-stone-600 text-stone-200'
+                    : 'bg-stone-100 border-stone-400 text-stone-800'
+                  : isDark
+                    ? 'bg-stone-900 border-stone-700 text-stone-400 hover:bg-stone-800 hover:text-stone-300'
+                    : 'bg-white border-stone-300 text-stone-600 hover:bg-stone-50 hover:text-stone-800'
+              "
+              @click="handleThemeChange(theme.value)"
+            >
+              <div :class="theme.icon" class="text-lg" />
+              <span class="text-sm font-medium">{{ theme.label }}</span>
+            </button>
+          </div>
+          <p
+            class="text-xs mt-2"
+            :class="isDark ? 'text-stone-500' : 'text-stone-500'"
+          >
+            Choose your preferred color theme
+          </p>
+        </div>
+      </div>
+
+      <div class="mb-8">
+        <h2
+          class="text-base font-semibold mb-4 pb-3 border-b"
+          :class="
+            isDark
+              ? 'text-stone-200 border-stone-800'
+              : 'text-stone-900 border-stone-200'
+          "
         >
           AI Provider
         </h2>
 
         <div class="mb-6">
-          <label class="text-sm text-gray-700 font-medium mb-2 block"
+          <label
+            class="text-sm font-medium mb-2 block"
+            :class="isDark ? 'text-stone-300' : 'text-stone-700'"
             >Select Provider</label
           >
           <select
             :value="settings.provider"
-            class="text-sm px-3.5 py-2.5 border border-gray-300 rounded-lg bg-white w-full focus:outline-none focus:border-blue-600"
+            class="text-sm px-3.5 py-2.5 border rounded-lg w-full focus:outline-none"
+            :class="
+              isDark
+                ? 'bg-stone-900 border-stone-700 text-stone-200 focus:border-stone-500'
+                : 'bg-white border-stone-300 text-stone-900 focus:border-stone-500'
+            "
             @change="handleProviderChange"
           >
             <option
@@ -51,23 +131,36 @@ function handleApiKeyChange(e: Event) {
               {{ provider.label }}
             </option>
           </select>
-          <p class="text-xs text-gray-500 mt-2">
+          <p
+            class="text-xs mt-2"
+            :class="isDark ? 'text-stone-500' : 'text-stone-500'"
+          >
             Choose your preferred AI service for generating websites
           </p>
         </div>
 
         <div class="mb-6">
-          <label class="text-sm text-gray-700 font-medium mb-2 block"
+          <label
+            class="text-sm font-medium mb-2 block"
+            :class="isDark ? 'text-stone-300' : 'text-stone-700'"
             >API Key</label
           >
           <input
             type="password"
             :value="settings.apiKey"
             placeholder="Enter your API key"
-            class="text-sm px-3.5 py-2.5 border border-gray-300 rounded-lg w-full focus:outline-none focus:border-blue-600"
+            class="text-sm px-3.5 py-2.5 border rounded-lg w-full focus:outline-none"
+            :class="
+              isDark
+                ? 'bg-stone-900 border-stone-700 text-stone-200 placeholder-stone-600 focus:border-stone-500'
+                : 'bg-white border-stone-300 text-stone-900 placeholder-stone-400 focus:border-stone-500'
+            "
             @input="handleApiKeyChange"
           />
-          <p class="text-xs text-gray-500 mt-2">
+          <p
+            class="text-xs mt-2"
+            :class="isDark ? 'text-stone-500' : 'text-stone-500'"
+          >
             Your API key is stored locally in your browser
           </p>
           <div class="mt-2">
@@ -76,7 +169,8 @@ function handleApiKeyChange(e: Event) {
               href="https://platform.deepseek.com/"
               target="_blank"
               rel="noopener"
-              class="text-xs text-blue-600 hover:underline"
+              class="text-xs hover:underline"
+              :class="isDark ? 'text-stone-400' : 'text-stone-600'"
             >
               Get DeepSeek API Key →
             </a>
@@ -85,7 +179,8 @@ function handleApiKeyChange(e: Event) {
               href="https://platform.moonshot.cn/"
               target="_blank"
               rel="noopener"
-              class="text-xs text-blue-600 hover:underline"
+              class="text-xs hover:underline"
+              :class="isDark ? 'text-stone-400' : 'text-stone-600'"
             >
               Get Kimi API Key →
             </a>
@@ -95,18 +190,31 @@ function handleApiKeyChange(e: Event) {
 
       <div>
         <h2
-          class="text-base text-gray-900 font-semibold mb-4 pb-3 border-b border-gray-200"
+          class="text-base font-semibold mb-4 pb-3 border-b"
+          :class="
+            isDark
+              ? 'text-stone-200 border-stone-800'
+              : 'text-stone-900 border-stone-200'
+          "
         >
           Data Management
         </h2>
         <div class="mb-4">
           <button
-            class="text-sm text-gray-700 font-medium px-4 py-2 border border-gray-300 rounded-lg bg-gray-100 hover:bg-gray-200"
+            class="text-sm font-medium px-4 py-2 border rounded-lg"
+            :class="
+              isDark
+                ? 'bg-stone-800 border-stone-700 text-stone-300 hover:bg-stone-700 hover:text-stone-200'
+                : 'bg-stone-100 border-stone-300 text-stone-700 hover:bg-stone-200'
+            "
             @click="resetSettings"
           >
             Reset All Settings
           </button>
-          <p class="text-xs text-gray-500 mt-2">
+          <p
+            class="text-xs mt-2"
+            :class="isDark ? 'text-stone-500' : 'text-stone-500'"
+          >
             This will reset all settings to their default values
           </p>
         </div>

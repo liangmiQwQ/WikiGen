@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import { useProjects } from "../../composables/use-projects";
+import { useProjects } from "../../composables/projects";
+import { useSettings } from "../../composables/settings";
 import type { Project } from "../../types";
 
 const props = defineProps<{
@@ -8,9 +9,12 @@ const props = defineProps<{
 }>();
 
 const { deleteProject } = useProjects();
+const { settings } = useSettings();
 
 const activeTab = ref<"preview" | "code">("preview");
 const showDeleteConfirm = ref(false);
+
+const isDark = computed(() => settings.value.theme === "dark");
 
 const previewUrl = computed(() => {
   const blob = new Blob([props.project.html], { type: "text/html" });
@@ -25,38 +29,71 @@ function handleDelete() {
 
 <template>
   <div
-    class="border border-gray-200 rounded-lg bg-white flex flex-col h-full overflow-hidden"
+    class="border rounded-lg flex flex-col h-full overflow-hidden"
+    :class="
+      isDark ? 'bg-stone-900 border-stone-800' : 'bg-white border-stone-200'
+    "
   >
     <div
-      class="px-4 py-3 border-b border-gray-200 bg-gray-50 flex items-center justify-between"
+      class="px-4 py-3 border-b flex items-center justify-between"
+      :class="
+        isDark
+          ? 'border-stone-800 bg-stone-800/50'
+          : 'border-stone-200 bg-stone-50'
+      "
     >
       <div class="flex flex-col gap-1 min-w-0">
-        <span class="text-sm text-gray-900 font-semibold truncate">{{
-          project.name
-        }}</span>
-        <span class="text-xs text-gray-500 truncate">{{
-          project.description
-        }}</span>
+        <span
+          class="text-sm font-semibold truncate"
+          :class="isDark ? 'text-stone-200' : 'text-stone-900'"
+          >{{ project.name }}</span
+        >
+        <span
+          class="text-xs truncate"
+          :class="isDark ? 'text-stone-500' : 'text-stone-500'"
+          >{{ project.description }}</span
+        >
       </div>
       <div class="flex gap-2 items-center">
         <div class="flex gap-1">
           <button
-            class="text-base text-gray-500 p-1.5 rounded flex items-center justify-center hover:text-gray-900 hover:bg-gray-100"
-            :class="activeTab === 'preview' ? 'bg-white text-blue-600' : ''"
+            class="text-base p-1.5 rounded flex items-center justify-center"
+            :class="
+              activeTab === 'preview'
+                ? isDark
+                  ? 'bg-stone-800 text-stone-200'
+                  : 'bg-white text-stone-800 shadow-sm'
+                : isDark
+                  ? 'text-stone-500 hover:text-stone-300 hover:bg-stone-800'
+                  : 'text-stone-500 hover:text-stone-900 hover:bg-stone-100'
+            "
             @click="activeTab = 'preview'"
           >
             <div class="i-ph-eye" />
           </button>
           <button
-            class="text-base text-gray-500 p-1.5 rounded flex items-center justify-center hover:text-gray-900 hover:bg-gray-100"
-            :class="activeTab === 'code' ? 'bg-white text-blue-600' : ''"
+            class="text-base p-1.5 rounded flex items-center justify-center"
+            :class="
+              activeTab === 'code'
+                ? isDark
+                  ? 'bg-stone-800 text-stone-200'
+                  : 'bg-white text-stone-800 shadow-sm'
+                : isDark
+                  ? 'text-stone-500 hover:text-stone-300 hover:bg-stone-800'
+                  : 'text-stone-500 hover:text-stone-900 hover:bg-stone-100'
+            "
             @click="activeTab = 'code'"
           >
             <div class="i-ph-code" />
           </button>
         </div>
         <button
-          class="text-base text-gray-500 p-1.5 rounded flex items-center justify-center hover:text-red-600 hover:bg-red-50"
+          class="text-base p-1.5 rounded flex items-center justify-center"
+          :class="
+            isDark
+              ? 'text-stone-500 hover:text-red-400 hover:bg-red-900/20'
+              : 'text-stone-500 hover:text-red-600 hover:bg-red-50'
+          "
           @click="showDeleteConfirm = true"
         >
           <div class="i-ph-trash" />
@@ -72,9 +109,14 @@ function handleDelete() {
           class="border-0 h-full w-full"
         />
       </div>
-      <div v-else class="bg-gray-800 h-full w-full overflow-auto">
+      <div v-else class="h-full w-full overflow-auto">
         <pre
-          class="text-xs text-gray-200 leading-relaxed font-mono m-0 p-4 whitespace-pre-wrap break-all"
+          class="text-xs leading-relaxed font-mono m-0 p-4 whitespace-pre-wrap break-all"
+          :class="
+            isDark
+              ? 'bg-stone-950 text-stone-300'
+              : 'bg-stone-900 text-stone-200'
+          "
           >{{ project.html }}</pre
         >
       </div>
@@ -85,16 +127,31 @@ function handleDelete() {
       class="p-4 bg-black/50 flex items-center inset-0 justify-center fixed z-50"
       @click="showDeleteConfirm = false"
     >
-      <div class="p-5 rounded-lg bg-white max-w-sm w-full" @click.stop>
-        <h3 class="text-base text-gray-900 font-semibold mb-3">
+      <div
+        class="p-5 rounded-lg max-w-sm w-full"
+        :class="isDark ? 'bg-stone-900' : 'bg-white'"
+        @click.stop
+      >
+        <h3
+          class="text-base font-semibold mb-3"
+          :class="isDark ? 'text-stone-100' : 'text-stone-900'"
+        >
           Delete Project
         </h3>
-        <p class="text-sm text-gray-500 mb-5">
+        <p
+          class="text-sm mb-5"
+          :class="isDark ? 'text-stone-400' : 'text-stone-500'"
+        >
           Are you sure you want to delete "{{ project.name }}"?
         </p>
         <div class="flex gap-2 justify-end">
           <button
-            class="text-sm text-gray-700 font-medium px-4 py-2 rounded-md bg-gray-100 hover:bg-gray-200"
+            class="text-sm font-medium px-4 py-2 rounded-md"
+            :class="
+              isDark
+                ? 'text-stone-300 bg-stone-800 hover:bg-stone-700'
+                : 'text-stone-700 bg-stone-100 hover:bg-stone-200'
+            "
             @click="showDeleteConfirm = false"
           >
             Cancel

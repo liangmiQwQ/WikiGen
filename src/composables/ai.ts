@@ -1,5 +1,5 @@
 import { ref } from "vue";
-import { useSettings } from "./use-settings";
+import { useSettings } from "./settings";
 
 interface StreamCallbacks {
   onChunk: (chunk: string) => void;

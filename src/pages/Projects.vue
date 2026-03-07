@@ -2,42 +2,65 @@
 import { computed } from "vue";
 import { useRouter } from "vue-router";
 import CodeEditor from "../components/preview/CodeEditor.vue";
-import { useProjects } from "../composables/use-projects";
+import { useProjects } from "../composables/projects";
+import { useSettings } from "../composables/settings";
 
 const { projects } = useProjects();
+const { settings } = useSettings();
 const router = useRouter();
 
 const hasProjects = computed(() => projects.value.length > 0);
+const isDark = computed(() => settings.value.theme === "dark");
 </script>
 
 <template>
   <div class="mx-auto p-4 h-full max-w-7xl overflow-y-auto md:p-6">
     <div class="mb-6">
-      <h1 class="text-xl text-gray-900 font-semibold mb-1 md:text-2xl">
+      <h1
+        class="text-xl font-semibold mb-1 md:text-2xl"
+        :class="isDark ? 'text-stone-100' : 'text-stone-900'"
+      >
         Your Projects
       </h1>
-      <p class="text-sm text-gray-500">
+      <p class="text-sm" :class="isDark ? 'text-stone-400' : 'text-stone-500'">
         View and manage your generated websites
       </p>
     </div>
 
     <div
       v-if="!hasProjects"
-      class="py-12 text-center border border-gray-200 rounded-lg bg-white md:py-16"
+      class="py-12 text-center border rounded-lg md:py-16"
+      :class="
+        isDark ? 'bg-stone-900 border-stone-800' : 'bg-white border-stone-200'
+      "
     >
       <div
-        class="text-3xl text-gray-400 mx-auto mb-4 rounded-2xl bg-gray-100 flex h-16 w-16 items-center justify-center"
+        class="text-3xl mx-auto mb-4 rounded-2xl flex h-16 w-16 items-center justify-center"
+        :class="
+          isDark ? 'bg-stone-800 text-stone-400' : 'bg-stone-100 text-stone-500'
+        "
       >
         <div class="i-ph-folder-open text-2xl" />
       </div>
-      <h3 class="text-base text-gray-900 font-semibold mb-2">
+      <h3
+        class="text-base font-semibold mb-2"
+        :class="isDark ? 'text-stone-100' : 'text-stone-900'"
+      >
         No projects yet
       </h3>
-      <p class="text-sm text-gray-500 mb-6">
+      <p
+        class="text-sm mb-6"
+        :class="isDark ? 'text-stone-400' : 'text-stone-500'"
+      >
         Start a chat and generate your first website!
       </p>
       <button
-        class="text-sm text-white font-medium px-5 py-2.5 rounded-md bg-blue-600 hover:bg-blue-700"
+        class="text-sm text-white font-medium px-5 py-2.5 rounded-md"
+        :class="
+          isDark
+            ? 'bg-stone-600 hover:bg-stone-500'
+            : 'bg-stone-700 hover:bg-stone-800'
+        "
         @click="router.push('/')"
       >
         Create Website
