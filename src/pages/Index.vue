@@ -22,19 +22,33 @@ const { generateWebsite, extractHtmlFromResponse } = useAI();
 
 const isGenerating = ref(false);
 const generationError = ref("");
+const generationProgress = ref(0);
+const showChat = ref(false);
 
-const showLeftPanel = computed(() => {
-  if (!currentConversation.value) return true;
-  return currentConversation.value.status === "creating";
+const hasWebsite = computed(() => !!currentConversation.value?.website);
+
+const viewMode = computed<"form" | "generating" | "preview">(() => {
+  if (isGenerating.value) return "generating";
+  if (hasWebsite.value) return "preview";
+  return "form";
 });
 
 async function handleFormSubmit(formData: WebsiteFormData) {
   generationError.value = "";
+  generationProgress.value = 0;
 
   // Create conversation
   const conversationId = createConversation(formData);
   updateConversationStatus(conversationId, "generating");
   isGenerating.value = true;
+
+  // Simulate progress while generating
+  const progressInterval = setInterval(() => {
+    if (generationProgress.value < 90) {
+      generationProgress.value += Math.random() * 15;
+      if (generationProgress.value > 90) generationProgress.value = 90;
+    }
+  }, 500);
 
   // Generate website
   let fullResponse = "";
@@ -44,6 +58,9 @@ async function handleFormSubmit(formData: WebsiteFormData) {
       fullResponse += chunk;
     },
     onComplete: () => {
+      clearInterval(progressInterval);
+      generationProgress.value = 100;
+
       const html = extractHtmlFromResponse(fullResponse);
       if (html) {
         // Add the generation as a message
@@ -64,19 +81,21 @@ async function handleFormSubmit(formData: WebsiteFormData) {
       } else {
         generationError.value = "Failed to extract HTML from response";
         updateConversationStatus(conversationId, "creating");
+        isGenerating.value = false;
       }
-      isGenerating.value = false;
+
+      // Small delay before hiding the generating screen
+      setTimeout(() => {
+        isGenerating.value = false;
+      }, 500);
     },
     onError: (error) => {
+      clearInterval(progressInterval);
       generationError.value = error.message;
       updateConversationStatus(conversationId, "creating");
       isGenerating.value = false;
     },
   });
-}
-
-function handleModificationRequest() {
-  // Modification requests are handled by ChatInterface component
 }
 
 function handleWebsiteModified(html: string, description: string) {
@@ -97,6 +116,11 @@ function handleSwitchVersion(versionNumber: number) {
 
 function startNew() {
   currentConversationId.value = null;
+  showChat.value = false;
+}
+
+function toggleChat() {
+  showChat.value = !showChat.value;
 }
 </script>
 
@@ -109,86 +133,225 @@ function startNew() {
       :class="isDark ? 'bg-red-900' : 'bg-red-600'"
     >
       <div class="flex gap-3 items-start">
-        <div class="i ph-warning-circle text-xl" />
+        <div class="i-ph-warning-circle text-xl" />
         <div class="flex-1">
           <p class="text-sm font-medium">Generation Failed</p>
           <p class="text-xs mt-1 opacity-90">{{ generationError }}</p>
         </div>
         <button @click="generationError = ''">
-          <div class="i ph-x" />
+          <div class="i-ph-x" />
         </button>
       </div>
     </div>
 
-    <div class="flex flex-col h-full lg:flex-row">
-      <!-- Left Panel: Form or Chat -->
-      <div
-        class="min-w-0 transition-all duration-300"
-        :class="[
-          showLeftPanel
-            ? 'h-full lg:w-[45%] xl:w-[40%]'
-            : 'h-0 lg:h-full lg:w-[35%] xl:w-[30%]',
-        ]"
-      >
-        <CreationForm v-if="showLeftPanel" @submit="handleFormSubmit" />
-        <ChatInterface
-          v-else-if="currentConversation"
-          :conversation="currentConversation"
-          @website-modified="handleWebsiteModified"
-        />
-      </div>
+    <!-- View: Form -->
+    <div v-if="viewMode === 'form'" class="h-full">
+      <CreationForm @submit="handleFormSubmit" />
+    </div>
 
-      <!-- Resizer (visible when both panels shown) -->
-      <div
-        v-if="!showLeftPanel"
-        class="flex-shrink-0 hidden lg:h-full lg:w-px lg:block"
-        :class="isDark ? 'bg-stone-800' : 'bg-stone-200'"
-      />
-
-      <!-- Right Panel: Website Viewer -->
-      <div
-        class="flex-1 min-w-0 transition-all duration-300"
-        :class="[showLeftPanel ? 'h-0 lg:h-full' : 'h-full']"
-      >
-        <WebsiteViewer
-          v-if="currentConversation"
-          :conversation="currentConversation"
-          @request-modification="handleModificationRequest"
-          @switch-version="handleSwitchVersion"
-        />
+    <!-- View: Generating with Progress Bar -->
+    <div
+      v-else-if="viewMode === 'generating'"
+      class="p-8 flex flex-col h-full items-center justify-center"
+      :class="isDark ? 'bg-stone-900' : 'bg-stone-50'"
+    >
+      <div class="mx-auto text-center max-w-md w-full">
         <div
-          v-else
-          class="p-8 flex flex-col h-full items-center justify-center"
+          class="text-4xl mx-auto mb-6 rounded-2xl flex h-20 w-20 items-center justify-center animate-pulse"
           :class="
             isDark
-              ? 'bg-stone-900 text-stone-500'
-              : 'bg-stone-50 text-stone-400'
+              ? 'bg-stone-800 text-stone-300'
+              : 'bg-stone-200 text-stone-600'
           "
         >
+          <div class="i-ph-magic-wand text-3xl" />
+        </div>
+
+        <h2
+          class="text-2xl font-bold mb-2"
+          :class="isDark ? 'text-stone-100' : 'text-stone-900'"
+        >
+          Creating Your Website
+        </h2>
+
+        <p
+          class="text-sm mb-8"
+          :class="isDark ? 'text-stone-400' : 'text-stone-600'"
+        >
+          Our AI is crafting a beautiful knowledge website for you...
+        </p>
+
+        <!-- Progress Bar -->
+        <div class="mb-4 w-full">
           <div
-            class="text-3xl mb-4 rounded-2xl flex h-16 w-16 items-center justify-center"
+            class="rounded-full h-2 w-full overflow-hidden"
             :class="isDark ? 'bg-stone-800' : 'bg-stone-200'"
           >
-            <div class="i ph-plus" />
+            <div
+              class="rounded-full h-full transition-all duration-300 ease-out"
+              :class="isDark ? 'bg-stone-500' : 'bg-stone-600'"
+              :style="{ width: `${Math.min(generationProgress, 100)}%` }"
+            />
           </div>
-          <p class="text-sm">Start by creating a new website</p>
+        </div>
+
+        <p
+          class="text-xs"
+          :class="isDark ? 'text-stone-500' : 'text-stone-400'"
+        >
+          {{ Math.round(Math.min(generationProgress, 100)) }}% complete
+        </p>
+
+        <!-- Animated steps -->
+        <div class="mt-8 flex gap-2 justify-center">
+          <span
+            class="rounded-full h-2 w-2 animate-bounce"
+            :class="isDark ? 'bg-stone-600' : 'bg-stone-400'"
+            style="animation-delay: 0ms"
+          />
+          <span
+            class="rounded-full h-2 w-2 animate-bounce"
+            :class="isDark ? 'bg-stone-600' : 'bg-stone-400'"
+            style="animation-delay: 150ms"
+          />
+          <span
+            class="rounded-full h-2 w-2 animate-bounce"
+            :class="isDark ? 'bg-stone-600' : 'bg-stone-400'"
+            style="animation-delay: 300ms"
+          />
         </div>
       </div>
     </div>
 
-    <!-- New Website Button (when viewing existing) -->
-    <button
-      v-if="!showLeftPanel"
-      class="text-sm text-white font-medium px-4 py-2 rounded-full flex gap-2 shadow-lg transition-transform items-center bottom-6 right-6 fixed hover:scale-105"
-      :class="
-        isDark
-          ? 'bg-stone-600 hover:bg-stone-500'
-          : 'bg-stone-700 hover:bg-stone-800'
-      "
-      @click="startNew"
-    >
-      <div class="i ph-plus text-lg" />
-      New Website
-    </button>
+    <!-- View: Preview (Single Page) -->
+    <div v-else-if="viewMode === 'preview'" class="flex flex-col h-full">
+      <!-- Top Bar with Actions -->
+      <div
+        class="px-4 py-3 border-b flex flex-shrink-0 items-center justify-between"
+        :class="
+          isDark
+            ? 'border-stone-800 bg-stone-800/50'
+            : 'border-stone-200 bg-stone-50'
+        "
+      >
+        <div class="flex gap-3 items-center">
+          <h1
+            class="text-base font-semibold"
+            :class="isDark ? 'text-stone-200' : 'text-stone-800'"
+          >
+            {{ currentConversation?.website?.name }}
+          </h1>
+          <span
+            v-if="currentConversation?.website?.versions.length"
+            class="text-xs px-2 py-1 rounded"
+            :class="
+              isDark
+                ? 'bg-stone-800 text-stone-400'
+                : 'bg-stone-200 text-stone-600'
+            "
+          >
+            v{{ currentConversation.website.versions.length }}
+          </span>
+        </div>
+
+        <div class="flex gap-2 items-center">
+          <button
+            class="text-sm font-medium px-3 py-2 rounded-md flex gap-1.5 items-center"
+            :class="
+              showChat
+                ? isDark
+                  ? 'bg-stone-800 text-stone-200'
+                  : 'bg-white text-stone-800 shadow-sm'
+                : isDark
+                  ? 'text-stone-400 hover:bg-stone-800 hover:text-stone-300'
+                  : 'text-stone-600 hover:bg-stone-200 hover:text-stone-900'
+            "
+            @click="toggleChat"
+          >
+            <div
+              :class="showChat ? 'i-ph-chat-circle-text' : 'i-ph-chat'"
+              class="text-base"
+            />
+            <span class="hidden sm:inline">
+              {{ showChat ? "Hide Chat" : "Edit" }}
+            </span>
+          </button>
+
+          <button
+            class="text-sm font-medium px-3 py-2 rounded-md flex gap-1.5 items-center"
+            :class="
+              isDark
+                ? 'text-stone-400 hover:bg-stone-800 hover:text-stone-300'
+                : 'text-stone-600 hover:bg-stone-200 hover:text-stone-900'
+            "
+            @click="startNew"
+          >
+            <div class="i-ph-plus text-base" />
+            <span class="hidden sm:inline">New</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Content Area -->
+      <div class="flex-1 min-h-0 overflow-hidden">
+        <div class="flex h-full">
+          <!-- Main Preview -->
+          <div
+            class="flex-1 min-w-0 transition-all duration-300"
+            :class="showChat ? 'hidden lg:block lg:w-2/3' : 'w-full'"
+          >
+            <WebsiteViewer
+              v-if="currentConversation"
+              :conversation="currentConversation"
+              @request-modification="toggleChat"
+              @switch-version="handleSwitchVersion"
+            />
+          </div>
+
+          <!-- Chat Panel (conditionally shown) -->
+          <div
+            v-if="showChat"
+            class="flex-shrink-0 h-full w-full lg:border-l lg:max-w-md lg:w-1/3"
+            :class="isDark ? 'border-stone-800' : 'border-stone-200'"
+          >
+            <div class="flex flex-col h-full">
+              <div
+                class="px-4 py-3 border-b flex flex-shrink-0 items-center justify-between lg:hidden"
+                :class="
+                  isDark
+                    ? 'border-stone-800 bg-stone-800/50'
+                    : 'border-stone-200 bg-stone-50'
+                "
+              >
+                <span
+                  class="text-sm font-medium"
+                  :class="isDark ? 'text-stone-200' : 'text-stone-800'"
+                >
+                  Chat
+                </span>
+                <button
+                  class="p-1 rounded"
+                  :class="
+                    isDark
+                      ? 'text-stone-400 hover:bg-stone-800'
+                      : 'text-stone-600 hover:bg-stone-200'
+                  "
+                  @click="showChat = false"
+                >
+                  <div class="i-ph-x text-lg" />
+                </button>
+              </div>
+              <div class="flex-1 min-h-0">
+                <ChatInterface
+                  v-if="currentConversation"
+                  :conversation="currentConversation"
+                  @website-modified="handleWebsiteModified"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>

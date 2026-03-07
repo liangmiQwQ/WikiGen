@@ -8,16 +8,10 @@ const props = defineProps<{
   conversation: Conversation | null;
 }>();
 
-const emit = defineEmits<{
-  requestModification: [request: string];
-  switchVersion: [versionNumber: number];
-}>();
-
 const { isDark } = useDarkTheme();
 const { createProject, getProjectByConversationId } = useProjects();
 
-const activeTab = ref<"preview" | "code" | "chat" | "modify">("preview");
-const modificationRequest = ref("");
+const activeTab = ref<"preview" | "code">("preview");
 const showSaveDialog = ref(false);
 
 const hasWebsite = computed(() => !!props.conversation?.website);
@@ -30,10 +24,6 @@ const previewUrl = computed(() => {
   if (!currentHtml.value) return "";
   const blob = new Blob([currentHtml.value], { type: "text/html" });
   return URL.createObjectURL(blob);
-});
-
-const versions = computed(() => {
-  return props.conversation?.website?.versions || [];
 });
 
 let lastUrl: string | null = null;
@@ -60,17 +50,6 @@ function handleSave() {
     props.conversation.id,
   );
   showSaveDialog.value = false;
-}
-
-function requestChange() {
-  if (!modificationRequest.value.trim()) return;
-  emit("requestModification", modificationRequest.value);
-  modificationRequest.value = "";
-  activeTab.value = "chat";
-}
-
-function switchToVersion(versionNumber: number) {
-  emit("switchVersion", versionNumber);
 }
 </script>
 
@@ -122,40 +101,6 @@ function switchToVersion(versionNumber: number) {
             <div class="i-ph-code text-base" />
             <span>Code</span>
           </button>
-          <button
-            v-if="hasWebsite"
-            class="text-sm font-medium px-3 py-2 rounded-md flex gap-1.5 items-center"
-            :class="
-              activeTab === 'chat'
-                ? isDark
-                  ? 'bg-stone-800 text-stone-200 shadow-sm'
-                  : 'bg-white text-stone-800 shadow-sm'
-                : isDark
-                  ? 'text-stone-500 hover:bg-stone-800 hover:text-stone-300'
-                  : 'text-stone-500 hover:bg-stone-100 hover:text-stone-900'
-            "
-            @click="activeTab = 'chat'"
-          >
-            <div class="i-ph-chat-circle-text text-base" />
-            <span>History</span>
-          </button>
-          <button
-            v-if="hasWebsite"
-            class="text-sm font-medium px-3 py-2 rounded-md flex gap-1.5 items-center"
-            :class="
-              activeTab === 'modify'
-                ? isDark
-                  ? 'bg-stone-800 text-stone-200 shadow-sm'
-                  : 'bg-white text-stone-800 shadow-sm'
-                : isDark
-                  ? 'text-stone-500 hover:bg-stone-800 hover:text-stone-300'
-                  : 'text-stone-500 hover:bg-stone-100 hover:text-stone-900'
-            "
-            @click="activeTab = 'modify'"
-          >
-            <div class="i ph-magic-wand text-base" />
-            <span>Modify</span>
-          </button>
         </div>
 
         <!-- Save Button -->
@@ -169,7 +114,7 @@ function switchToVersion(versionNumber: number) {
           "
           @click="showSaveDialog = true"
         >
-          <div class="i ph-floppy-disk text-base" />
+          <div class="i-ph-floppy-disk text-base" />
           <span>Save Project</span>
         </button>
         <span
@@ -207,7 +152,7 @@ function switchToVersion(versionNumber: number) {
                 : 'bg-stone-100 text-stone-400'
             "
           >
-            <div class="i ph-globe text-xl" />
+            <div class="i-ph-globe text-xl" />
           </div>
           <p
             class="text-sm font-medium mb-2"
@@ -257,168 +202,6 @@ function switchToVersion(versionNumber: number) {
           >
             No code available
           </p>
-        </div>
-      </div>
-
-      <!-- Chat/History Tab -->
-      <div
-        v-else-if="activeTab === 'chat'"
-        class="p-4 h-full overflow-y-auto md:p-6"
-        :class="isDark ? 'bg-stone-900' : 'bg-stone-50'"
-      >
-        <div v-if="conversation?.messages.length" class="space-y-4">
-          <div
-            v-for="message in conversation.messages"
-            :key="message.id"
-            class="flex gap-3"
-          >
-            <div class="flex flex-shrink-0 h-6 w-6 items-center justify-center">
-              <div
-                v-if="message.role === 'user'"
-                class="i-ph-user"
-                :class="isDark ? 'text-stone-500' : 'text-stone-400'"
-              />
-              <div
-                v-else
-                class="i ph-robot"
-                :class="isDark ? 'text-stone-500' : 'text-stone-400'"
-              />
-            </div>
-            <div class="flex-1 min-w-0">
-              <div
-                class="text-sm p-3 rounded-lg"
-                :class="
-                  message.role === 'user'
-                    ? isDark
-                      ? 'bg-stone-800 text-stone-200'
-                      : 'bg-stone-200 text-stone-800'
-                    : isDark
-                      ? 'bg-stone-800/50 text-stone-300'
-                      : 'bg-white text-stone-700'
-                "
-              >
-                {{ message.content }}
-              </div>
-              <div v-if="message.extractedHtml" class="mt-2 flex gap-2">
-                <span
-                  class="text-xs px-2 py-1 rounded flex gap-1 w-fit items-center"
-                  :class="
-                    isDark
-                      ? 'bg-stone-800 text-stone-400'
-                      : 'bg-stone-100 text-stone-600'
-                  "
-                >
-                  <div class="i-ph-check-circle" />
-                  HTML Generated
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div
-          v-else
-          class="text-center flex flex-col h-full items-center justify-center"
-          :class="isDark ? 'text-stone-500' : 'text-stone-400'"
-        >
-          <div
-            class="text-2xl mb-4 rounded-xl flex h-12 w-12 items-center justify-center"
-            :class="
-              isDark
-                ? 'bg-stone-800 text-stone-500'
-                : 'bg-stone-100 text-stone-400'
-            "
-          >
-            <div class="i ph-chat-dots text-xl" />
-          </div>
-          <p class="text-sm">No conversation history yet</p>
-        </div>
-      </div>
-
-      <!-- Modify Tab -->
-      <div
-        v-else-if="activeTab === 'modify'"
-        class="p-4 h-full overflow-y-auto md:p-6"
-        :class="isDark ? 'bg-stone-900' : 'bg-stone-50'"
-      >
-        <div class="mx-auto max-w-2xl space-y-6">
-          <!-- Version History -->
-          <div
-            v-if="versions.length > 1"
-            class="p-4 border rounded-lg"
-            :class="
-              isDark
-                ? 'border-stone-800 bg-stone-800/50'
-                : 'border-stone-200 bg-stone-100'
-            "
-          >
-            <h3
-              class="text-sm font-medium mb-3 flex gap-2 items-center"
-              :class="isDark ? 'text-stone-300' : 'text-stone-700'"
-            >
-              <div class="i ph-clock-counter-clockwise" />
-              Version History
-            </h3>
-            <div class="flex flex-wrap gap-2">
-              <button
-                v-for="version in versions"
-                :key="version.version"
-                class="text-xs px-3 py-1.5 rounded-md flex gap-1.5 items-center"
-                :class="
-                  version.html === currentHtml
-                    ? isDark
-                      ? 'bg-stone-600 text-stone-200'
-                      : 'bg-stone-700 text-stone-100'
-                    : isDark
-                      ? 'bg-stone-700 text-stone-400 hover:bg-stone-600'
-                      : 'bg-white text-stone-600 hover:bg-stone-200'
-                "
-                @click="switchToVersion(version.version)"
-              >
-                v{{ version.version }}
-                <span
-                  class="max-w-[150px] truncate"
-                  :title="version.changeDescription"
-                >
-                  {{ version.changeDescription }}
-                </span>
-              </button>
-            </div>
-          </div>
-
-          <!-- Modification Request -->
-          <div class="space-y-3">
-            <label
-              class="text-sm font-medium flex gap-2 items-center"
-              :class="isDark ? 'text-stone-300' : 'text-stone-700'"
-            >
-              <div class="i ph-pencil-simple" />
-              Request Changes
-            </label>
-            <textarea
-              v-model="modificationRequest"
-              rows="4"
-              placeholder="Describe what changes you'd like to make to the website..."
-              class="text-sm px-4 py-3 border rounded-lg w-full resize-none transition-colors focus:outline-none"
-              :class="
-                isDark
-                  ? 'border-stone-700 bg-stone-800 text-stone-200 placeholder-stone-500 focus:border-stone-500'
-                  : 'border-stone-200 bg-white text-stone-900 placeholder-stone-400 focus:border-stone-500'
-              "
-            />
-            <button
-              class="text-sm text-white font-medium py-3 rounded-lg flex gap-2 w-full transition-colors items-center justify-center"
-              :class="
-                isDark
-                  ? 'bg-stone-600 hover:bg-stone-500 disabled:opacity-50'
-                  : 'bg-stone-700 hover:bg-stone-800 disabled:opacity-50'
-              "
-              :disabled="!modificationRequest.trim()"
-              @click="requestChange"
-            >
-              <div class="i ph-paper-plane-right text-lg" />
-              Send Request to AI
-            </button>
-          </div>
         </div>
       </div>
     </div>
