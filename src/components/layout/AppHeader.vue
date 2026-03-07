@@ -23,14 +23,10 @@ const navItems = [
       class="mx-auto px-4 flex h-full max-w-7xl items-center justify-between md:px-6"
     >
       <div
-        class="text-xl font-semibold flex gap-2 items-center"
+        class="text-xl font-semibold flex gap-3 items-center"
         :class="isDark ? 'text-stone-100' : 'text-stone-900'"
       >
-        <div
-          class="text-lg text-white rounded-lg flex h-8 w-8 ring-1 ring-stone-500/50 items-center justify-center from-stone-600 to-stone-800 bg-gradient-to-br"
-        >
-          <div class="i-ph-article-fill" />
-        </div>
+        <div class="i-ph-article-ny-times text-3xl" />
         <span>WikiGen</span>
       </div>
       <div class="flex gap-2 items-center">
