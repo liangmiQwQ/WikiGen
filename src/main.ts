@@ -1,6 +1,10 @@
-import { createVaporApp } from "vue";
+import { createApp, vaporInteropPlugin } from "vue";
 import App from "./App.vue";
+import router from "./router";
 import "./style.css";
 import "virtual:uno.css";
 
-createVaporApp(App).mount("#app");
+const app = createApp(App);
+app.use(vaporInteropPlugin);
+app.use(router);
+app.mount("#app");
