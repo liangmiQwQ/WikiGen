@@ -14,7 +14,8 @@ const emit = defineEmits<{
   websiteModified: [html: string, description: string];
 }>();
 
-const { isStreaming, runAgentChat, cancelCurrentResponse } = useAI();
+const { isStreaming, lastRunTokensUsed, runAgentChat, cancelCurrentResponse } =
+  useAI();
 const {
   addMessage,
   updateMessageContent,
@@ -267,6 +268,7 @@ async function regenerateAssistantMessage(message: Message) {
       :disabled="!props.conversation"
       :is-streaming="isStreaming"
       :is-input-disabled="isInputDisabled"
+      :tokens-used="lastRunTokensUsed"
       @send="handleSend"
       @cancel="cancelCurrentResponse"
     />

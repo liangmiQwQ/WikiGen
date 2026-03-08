@@ -49,6 +49,7 @@ interface AgentChatMessage {
 interface StreamResult {
   content: string;
   finishReason: string | null;
+  totalTokensUsed: number;
   toolCalls: {
     id: string;
     name: string;
@@ -180,6 +181,7 @@ async function streamDeepseek(
   let buffer = "";
   let content = "";
   let finishReason: string | null = null;
+  let totalTokensUsed = 0;
   const toolCallsByIndex = new Map<
     number,
     {
@@ -206,6 +208,7 @@ async function streamDeepseek(
           return {
             content,
             finishReason,
+            totalTokensUsed,
             toolCalls: [...toolCallsByIndex.values()],
           };
         }
@@ -215,6 +218,11 @@ async function streamDeepseek(
           parsed = JSON.parse(data);
         } catch {
           continue;
+        }
+
+        const usageTokens = parsed?.usage?.total_tokens;
+        if (typeof usageTokens === "number" && Number.isFinite(usageTokens)) {
+          totalTokensUsed = usageTokens;
         }
 
         const choice = parsed.choices?.[0];
@@ -258,6 +266,7 @@ async function streamDeepseek(
     return {
       content,
       finishReason,
+      totalTokensUsed,
       toolCalls: [...toolCallsByIndex.values()],
     };
   } finally {
@@ -403,6 +412,7 @@ function executeToolCall(
 export function useAI() {
   const { getCurrentApiKey } = useSettings();
   const isStreaming = ref(false);
+  const lastRunTokensUsed = ref(0);
   const abortController = ref<AbortController | null>(null);
 
   function cancelCurrentResponse() {
@@ -446,6 +456,8 @@ export function useAI() {
 
     let fullResponse = "";
     let hasToolCall = false;
+    let runTokensUsed = 0;
+    lastRunTokensUsed.value = 0;
 
     try {
       for (let turns = 0; turns < 8; turns++) {
@@ -457,6 +469,8 @@ export function useAI() {
         );
 
         fullResponse += result.content;
+        runTokensUsed += result.totalTokensUsed;
+        lastRunTokensUsed.value = runTokensUsed;
 
         if (result.content.trim() || result.toolCalls.length) {
           messages.push({
@@ -553,6 +567,7 @@ export function useAI() {
 
   return {
     isStreaming,
+    lastRunTokensUsed,
     cancelCurrentResponse,
     runAgentChat,
     generateWebsite,

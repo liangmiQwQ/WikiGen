@@ -5,6 +5,7 @@ defineProps<{
   disabled?: boolean;
   isStreaming?: boolean;
   isInputDisabled?: boolean;
+  tokensUsed?: number;
 }>();
 
 const emit = defineEmits<{
@@ -43,23 +44,31 @@ function handleKeydown(e: KeyboardEvent) {
           @keydown="handleKeydown"
         />
 
-        <div class="p-2 flex gap-1.5 items-center justify-end">
-          <button
-            v-if="isStreaming"
-            class="text-sm text-red-600 font-medium px-2.5 rounded-lg flex gap-1.5 h-8 transition-colors items-center justify-center dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
-            @click="emit('cancel')"
+        <div class="p-2 flex gap-1.5 items-center justify-between">
+          <div
+            class="text-xs text-stone-500 pl-1 flex gap-1 items-center dark:text-stone-400"
           >
-            <div class="i-ph-stop-circle text-lg" />
-            <span>Stop</span>
-          </button>
-          <button
-            class="text-sm text-stone-600 font-medium px-2.5 rounded-lg flex gap-1.5 h-8 transition-colors items-center justify-center dark:text-stone-300 hover:bg-stone-100 disabled:opacity-30 disabled:cursor-not-allowed dark:hover:bg-stone-700"
-            :disabled="isInputDisabled || !modelValue.trim()"
-            @click="emit('send')"
-          >
-            <span>Send</span>
-            <div class="i-ph-paper-plane-right text-lg" />
-          </button>
+            <div class="i-ph-gauge text-sm" />
+            <span>Token 速率 ( {{ tokensUsed || 0 }} tokens used )</span>
+          </div>
+          <div class="flex gap-1.5 items-center">
+            <button
+              v-if="isStreaming"
+              class="text-sm text-red-600 font-medium px-2.5 rounded-lg flex gap-1.5 h-8 transition-colors items-center justify-center dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
+              @click="emit('cancel')"
+            >
+              <div class="i-ph-stop-circle text-lg" />
+              <span>Stop</span>
+            </button>
+            <button
+              class="text-sm text-stone-600 font-medium px-2.5 rounded-lg flex gap-1.5 h-8 transition-colors items-center justify-center dark:text-stone-300 hover:bg-stone-100 disabled:opacity-30 disabled:cursor-not-allowed dark:hover:bg-stone-700"
+              :disabled="isInputDisabled || !modelValue.trim()"
+              @click="emit('send')"
+            >
+              <span>Send</span>
+              <div class="i-ph-paper-plane-right text-lg" />
+            </button>
+          </div>
         </div>
       </div>
     </div>
