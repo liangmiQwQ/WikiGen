@@ -49,7 +49,7 @@ function handleKeydown(e: KeyboardEvent) {
             class="text-xs text-stone-500 pl-1 flex gap-1 items-center dark:text-stone-400"
           >
             <div class="i-ph-gauge text-sm" />
-            <span>Token 速率 ( {{ tokensUsed || 0 }} tokens used )</span>
+            <span>Token ( {{ tokensUsed || 0 }} tokens used )</span>
           </div>
           <div class="flex gap-1.5 items-center">
             <button

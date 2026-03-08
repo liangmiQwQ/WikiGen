@@ -30,25 +30,13 @@ const {
   renameProject,
   updateProject,
 } = useProjects();
-const {
-  generateWebsite,
-  generateDescription,
-  generateProjectTitle,
-  cancelCurrentResponse,
-  isStreaming,
-} = useAI();
+const { generateWebsite, generateDescription, generateProjectTitle } = useAI();
 
 const conversationId = computed(() => route.params.id as string);
 const isBootstrappingGeneration = ref(false);
 
 const conversation = computed(() => {
   return conversations.value.find((c) => c.id === conversationId.value) || null;
-});
-
-const statusLabel = computed(() => {
-  if (conversation.value?.status === "generating") return "Generating";
-  if (conversation.value?.status === "completed") return "Done";
-  return "Draft";
 });
 
 watch(
@@ -262,14 +250,6 @@ const previewHtml = computed(() => {
     ""
   );
 });
-
-function goToPreview() {
-  if (!previewHtml.value) return;
-  router.push({
-    name: "ProjectPreview",
-    params: { id: conversationId.value },
-  });
-}
 </script>
 
 <template>
@@ -296,27 +276,21 @@ function goToPreview() {
           </h1>
         </div>
         <div class="flex gap-2 items-center">
-          <span
-            class="text-xs text-stone-700 px-2.5 py-1 border border-stone-300 rounded-full bg-stone-100 dark:text-stone-300 dark:border-stone-700 dark:bg-stone-800"
-          >
-            {{ statusLabel }}
-          </span>
           <button
-            v-if="isStreaming"
-            class="text-xs text-stone-700 font-medium px-2.5 py-1.5 border border-stone-300 rounded-md flex gap-1 transition-colors items-center dark:text-stone-200 dark:border-stone-700 hover:bg-stone-200 dark:hover:bg-stone-800"
-            @click="cancelCurrentResponse"
+            class="text-xs text-stone-900 font-medium px-3 py-1.5 border border-stone-900 rounded-md bg-stone-100 flex gap-1.5 transition-colors items-center dark:text-stone-100 dark:border-stone-100 dark:bg-stone-800"
+            disabled
           >
-            <div class="i-ph-stop-circle text-sm" />
-            Stop
+            <div class="i-ph-chat-circle text-sm" />
+            Chat
           </button>
-          <button
+          <RouterLink
+            :to="{ name: 'ProjectPreview', params: { id: conversationId } }"
             class="text-xs text-stone-700 font-medium px-3 py-1.5 border border-stone-300 rounded-md flex gap-1.5 transition-colors items-center dark:text-stone-200 dark:border-stone-700 hover:bg-stone-200 disabled:opacity-50 disabled:cursor-not-allowed dark:hover:bg-stone-800"
-            :disabled="!previewHtml"
-            @click="goToPreview"
+            :class="{ 'pointer-events-none opacity-50': !previewHtml }"
           >
-            <div class="i-ph-arrows-out-simple text-sm" />
-            Full Preview
-          </button>
+            <div class="i-ph-eye text-sm" />
+            Preview
+          </RouterLink>
         </div>
       </div>
     </div>

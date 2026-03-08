@@ -5,11 +5,13 @@ import type { Conversation } from "../../types";
 
 const props = defineProps<{
   conversation: Conversation | null;
+  activeTab?: "preview" | "code";
 }>();
 
 const { createProject, getProjectByConversationId } = useProjects();
 
-const activeTab = ref<"preview" | "code">("preview");
+const internalActiveTab = ref<"preview" | "code">("preview");
+const activeTab = computed(() => props.activeTab ?? internalActiveTab.value);
 const showSaveDialog = ref(false);
 
 const hasWebsite = computed(() => !!props.conversation?.website);
@@ -52,9 +54,10 @@ function handleSave() {
 </script>
 
 <template>
-  <div class="flex flex-col h-full">
-    <!-- Tabs -->
+  <div class="flex flex-col h-full" flex-1>
+    <!-- Tabs - only show when activeTab prop is not provided (internal control) -->
     <div
+      v-if="props.activeTab === undefined"
       class="px-4 py-3 border-b border-stone-200 bg-stone-50 dark:border-stone-800 dark:bg-stone-800/50"
     >
       <div class="flex items-center justify-between">
@@ -66,7 +69,7 @@ function handleSave() {
                 ? 'bg-white text-stone-800 shadow-sm dark:bg-stone-800 dark:text-stone-200'
                 : 'text-stone-500 hover:bg-stone-100 hover:text-stone-900 dark:hover:bg-stone-800 dark:hover:text-stone-300'
             "
-            @click="activeTab = 'preview'"
+            @click="internalActiveTab = 'preview'"
           >
             <div class="i-ph-eye text-base" />
             <span>Preview</span>
@@ -78,7 +81,7 @@ function handleSave() {
                 ? 'bg-white text-stone-800 shadow-sm dark:bg-stone-800 dark:text-stone-200'
                 : 'text-stone-500 hover:bg-stone-100 hover:text-stone-900 dark:hover:bg-stone-800 dark:hover:text-stone-300'
             "
-            @click="activeTab = 'code'"
+            @click="internalActiveTab = 'code'"
           >
             <div class="i-ph-code text-base" />
             <span>Code</span>
@@ -105,19 +108,22 @@ function handleSave() {
     </div>
 
     <!-- Content -->
-    <div class="flex-1 relative overflow-hidden">
+    <div class="flex flex-1 flex-col relative overflow-hidden" h-full>
       <!-- Preview Tab -->
-      <div v-if="activeTab === 'preview'" class="h-full w-full">
+      <div
+        v-if="activeTab === 'preview'"
+        class="flex flex-1 flex-col h-full w-full items-center justify-center"
+      >
         <iframe
           v-if="currentHtml"
           :src="previewUrl"
           sandbox="allow-scripts"
           title="Website Preview"
-          class="border-0 h-full w-full"
+          class="border-0 flex-1 h-full w-full"
         />
         <div
           v-else
-          class="text-stone-400 p-8 text-center flex flex-col h-full w-full items-center justify-center dark:text-stone-500"
+          class="text-stone-400 p-8 text-center flex flex-col items-center justify-center dark:text-stone-500"
         >
           <div
             class="text-2xl text-stone-400 mb-4 rounded-xl bg-stone-100 flex h-12 w-12 items-center justify-center dark:text-stone-500 dark:bg-stone-800"
@@ -138,7 +144,7 @@ function handleSave() {
       <!-- Code Tab -->
       <div
         v-else-if="activeTab === 'code'"
-        class="bg-stone-900 h-full w-full overflow-auto dark:bg-stone-950"
+        class="flex-colw-full bg-stone-900 flex flex-1 items-center justify-center overflow-auto dark:bg-stone-950"
       >
         <pre
           v-if="currentHtml"
