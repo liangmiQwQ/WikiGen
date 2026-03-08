@@ -67,7 +67,10 @@ Rules:
 9. For file edits, use apply_html_patch with minimal oldText/newText operations, not full-file output.
 10. When user requests website changes, apply edits directly instead of pasting full HTML in chat.
 11. If patch application fails, read file again and retry with corrected operations.
-12. Keep responses concise, practical, conversational, and progress-oriented.`;
+12. Keep responses concise, practical, conversational, and progress-oriented.
+13. IMPORTANT: Engage actively with the user. Ask clarifying questions, confirm understanding, and seek feedback at key milestones.
+14. CRITICAL: Limit yourself to at most 3 consecutive tool calls in a single response. After that, pause and wait for user input or confirmation before proceeding with more changes.
+15. If a task requires many steps, break it down and check in with the user periodically rather than executing everything at once.`;
 
 export function buildInitialTaskPrompt(formData: WebsiteFormData): string {
   const sectionsText =

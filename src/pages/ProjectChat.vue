@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from "vue";
+import { computed, watch } from "vue";
 import { RouterLink, useRoute, useRouter } from "vue-router";
 import ChatInterface from "../components/chat/ChatInterface.vue";
 import { useAI } from "../composables/ai";
@@ -10,6 +10,7 @@ import { PROJECT_TITLE_FALLBACK } from "../prompts/project-title";
 
 const route = useRoute();
 const router = useRouter();
+const bootstrappingConversationIds = new Set<string>();
 const {
   conversations,
   updateWebsiteHtml,
@@ -33,7 +34,9 @@ const {
 const { generateWebsite, generateDescription, generateProjectTitle } = useAI();
 
 const conversationId = computed(() => route.params.id as string);
-const isBootstrappingGeneration = ref(false);
+const isBootstrappingGeneration = computed(() =>
+  bootstrappingConversationIds.has(conversationId.value),
+);
 
 const conversation = computed(() => {
   return conversations.value.find((c) => c.id === conversationId.value) || null;
@@ -69,6 +72,7 @@ watch(
 async function runInitialGeneration() {
   const currentConversation = conversation.value;
   if (!currentConversation) return;
+  if (bootstrappingConversationIds.has(currentConversation.id)) return;
 
   if (!currentConversation.initialFormData) {
     updateConversationStatus(currentConversation.id, "creating");
@@ -81,7 +85,7 @@ async function runInitialGeneration() {
     return;
   }
 
-  isBootstrappingGeneration.value = true;
+  bootstrappingConversationIds.add(currentConversation.id);
   const formData = currentConversation.initialFormData;
 
   const hasInitialUserMessage = currentConversation.messages.some(
@@ -105,7 +109,7 @@ async function runInitialGeneration() {
   });
 
   if (!assistantMessage) {
-    isBootstrappingGeneration.value = false;
+    bootstrappingConversationIds.delete(currentConversation.id);
     return;
   }
 
@@ -230,7 +234,7 @@ async function runInitialGeneration() {
       );
     }
   } finally {
-    isBootstrappingGeneration.value = false;
+    bootstrappingConversationIds.delete(currentConversation.id);
   }
 }
 
