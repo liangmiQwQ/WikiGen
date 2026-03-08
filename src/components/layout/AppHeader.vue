@@ -10,6 +10,11 @@ const navItems = [
   { path: "/projects", label: "Projects", icon: "i-ph-folder" },
   { path: "/settings", label: "Settings", icon: "i-ph-gear" },
 ];
+
+function isActive(path: string) {
+  if (path === "/projects") return route.path === "/projects";
+  return route.path === path;
+}
 </script>
 
 <template>
@@ -35,7 +40,7 @@ const navItems = [
             :to="item.path"
             class="text-sm font-medium px-3 py-2 rounded-md flex gap-1.5 items-center md:px-4"
             :class="
-              route.path === item.path
+              isActive(item.path)
                 ? 'bg-stone-200 text-stone-900 dark:bg-stone-800 dark:text-stone-100'
                 : 'text-stone-500 hover:bg-stone-100 hover:text-stone-900 dark:text-stone-400 dark:hover:bg-stone-800 dark:hover:text-stone-200'
             "

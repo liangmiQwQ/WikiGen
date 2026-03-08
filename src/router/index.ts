@@ -11,14 +11,28 @@ const routes: RouteRecordRaw[] = [
     component: () => import("../pages/Create.vue"),
   },
   {
-    path: "/generating/:id",
-    name: "Generating",
-    component: () => import("../pages/Generating.vue"),
+    path: "/project/:id/chat",
+    name: "ProjectChat",
+    component: () => import("../pages/ProjectChat.vue"),
+  },
+  {
+    path: "/project/:id/preview",
+    name: "ProjectPreview",
+    component: () => import("../pages/ProjectPreview.vue"),
   },
   {
     path: "/preview/:id",
-    name: "Preview",
-    component: () => import("../pages/Preview.vue"),
+    redirect: (to) => ({
+      name: "ProjectPreview",
+      params: { id: to.params.id },
+    }),
+  },
+  {
+    path: "/generating/:id",
+    redirect: (to) => ({
+      name: "ProjectChat",
+      params: { id: to.params.id },
+    }),
   },
   {
     path: "/settings",

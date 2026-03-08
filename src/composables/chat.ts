@@ -26,6 +26,10 @@ export function useChat() {
       id,
       title: formData.topic,
       messages: [],
+      initialFormData: {
+        ...formData,
+        keySections: [...formData.keySections],
+      },
       status: "creating",
       createdAt: Date.now(),
       updatedAt: Date.now(),
@@ -89,6 +93,7 @@ export function useChat() {
       ],
       createdAt: Date.now(),
     };
+    delete conversation.initialFormData;
     conversation.status = "completed";
     conversation.updatedAt = Date.now();
   }

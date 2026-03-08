@@ -1,12 +1,19 @@
 <script setup lang="ts">
-import { RouterView } from "vue-router";
+import { computed } from "vue";
+import { RouterView, useRoute } from "vue-router";
 import AppHeader from "./components/layout/AppHeader.vue";
+
+const route = useRoute();
+const isProjectRoute = computed(() => route.path.startsWith("/project/"));
 </script>
 
 <template>
   <div class="bg-stone-50 min-h-screen dark:bg-stone-950">
-    <AppHeader />
-    <main class="h-[calc(100vh-64px)] overflow-hidden">
+    <AppHeader v-if="!isProjectRoute" />
+    <main
+      class="overflow-hidden"
+      :class="isProjectRoute ? 'h-screen' : 'h-[calc(100vh-64px)]'"
+    >
       <RouterView />
     </main>
   </div>

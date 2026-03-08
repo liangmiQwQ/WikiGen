@@ -24,7 +24,13 @@ function openProject(projectId: string) {
     );
     if (conversation) {
       selectConversation(conversation.id);
-      router.push("/");
+      const targetRoute = conversation.website?.currentHtml
+        ? "ProjectPreview"
+        : "ProjectChat";
+      router.push({
+        name: targetRoute,
+        params: { id: conversation.id },
+      });
     }
   }
 }
@@ -183,7 +189,7 @@ function isGenerating(projectId: string): boolean {
               class="bg-stone-100 flex flex-col h-full w-full items-center justify-center dark:bg-stone-900"
             >
               <div
-                class="i ph-spinner text-3xl text-stone-400 mb-2 animate-spin"
+                class="i-ph-spinner text-3xl text-stone-400 mb-2 animate-spin"
               />
               <p class="text-sm text-stone-500 dark:text-stone-400">
                 Generating...

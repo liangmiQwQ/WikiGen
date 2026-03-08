@@ -14,8 +14,20 @@ function generatePreviewUrl(html: string): string {
 }
 
 export function extractHtmlFromResponse(content: string): string | null {
-  const htmlMatch = content.match(/```html\n?([\s\S]*?)```/);
-  return htmlMatch ? htmlMatch[1].trim() : null;
+  const htmlBlockMatch = content.match(/```html\n?([\s\S]*?)```/i);
+  if (htmlBlockMatch) return htmlBlockMatch[1].trim();
+
+  const genericBlockMatch = content.match(/```\n?([\s\S]*?)```/);
+  if (genericBlockMatch && /<html|<!doctype html/i.test(genericBlockMatch[1])) {
+    return genericBlockMatch[1].trim();
+  }
+
+  const rawHtmlStart = content.search(/<!doctype html|<html/i);
+  if (rawHtmlStart >= 0) {
+    return content.slice(rawHtmlStart).trim();
+  }
+
+  return null;
 }
 
 function buildWebsitePrompt(formData: WebsiteFormData): string {

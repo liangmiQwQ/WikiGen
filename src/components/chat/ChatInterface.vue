@@ -23,6 +23,16 @@ const messages = computed(() => props.conversation?.messages || []);
 const isGenerating = computed(
   () => props.conversation?.status === "generating",
 );
+const isInputDisabled = computed(
+  () => isStreaming.value || props.conversation?.status !== "completed",
+);
+const inputPlaceholder = computed(() => {
+  if (props.conversation?.status === "generating")
+    return "Generating website... chat input will unlock when done";
+  if (props.conversation?.status !== "completed")
+    return "Chat is currently unavailable";
+  return "Request modifications to your website...";
+});
 
 watch(
   () => props.conversation?.messages.length,
@@ -113,10 +123,14 @@ function handleKeydown(e: KeyboardEvent) {
         <h3
           class="text-lg text-stone-900 font-semibold mb-2 dark:text-stone-100"
         >
-          AI Agent
+          {{ isGenerating ? "Generating Website" : "AI Agent" }}
         </h3>
         <p class="text-sm text-stone-600 dark:text-stone-400">
-          Your website has been generated. You can request modifications here.
+          {{
+            isGenerating
+              ? "Creating your first website now. You can start editing once generation finishes."
+              : "Your website has been generated. You can request modifications here."
+          }}
         </p>
       </div>
 
@@ -128,7 +142,7 @@ function handleKeydown(e: KeyboardEvent) {
               v-if="message.role === 'user'"
               class="i-ph-user text-stone-400 dark:text-stone-500"
             />
-            <div v-else class="i ph-robot text-stone-400 dark:text-stone-500" />
+            <div v-else class="i-ph-robot text-stone-400 dark:text-stone-500" />
           </div>
           <div class="flex-1 min-w-0">
             <div class="max-w-none prose prose-sm dark:prose-invert">
@@ -165,38 +179,24 @@ function handleKeydown(e: KeyboardEvent) {
 
     <!-- Input Area -->
     <div
-      v-if="conversation?.status === 'completed'"
       class="p-3 border-t border-stone-200 bg-stone-100 md:p-4 dark:border-stone-800 dark:bg-stone-900"
     >
       <div class="mx-auto flex gap-2 max-w-full items-end md:max-w-3xl">
         <textarea
           v-model="inputMessage"
-          placeholder="Request modifications to your website..."
-          :disabled="isStreaming"
+          :placeholder="inputPlaceholder"
+          :disabled="isInputDisabled"
           rows="1"
           class="text-sm text-stone-900 leading-relaxed px-3.5 py-2.5 border border-stone-200 rounded-lg bg-stone-50 flex-1 max-h-[120px] min-h-[44px] resize-none transition-colors dark:text-stone-200 md:px-4 md:py-3 focus:outline-none dark:border-stone-700 focus:border-stone-500 dark:bg-stone-900 focus:bg-white disabled:opacity-60 disabled:cursor-not-allowed dark:focus:border-stone-500 dark:focus:bg-stone-800 placeholder-stone-400 dark:placeholder-stone-500"
           @keydown="handleKeydown"
         />
         <button
           class="text-lg text-white rounded-lg bg-stone-200 flex flex-shrink-0 h-11 w-11 transition-colors items-center justify-center dark:bg-stone-800 hover:bg-stone-300 disabled:opacity-50 md:h-12 md:w-12 disabled:cursor-not-allowed dark:hover:bg-stone-700"
-          :disabled="isStreaming || !inputMessage.trim()"
+          :disabled="isInputDisabled || !inputMessage.trim()"
           @click="handleSendModification"
         >
           <div class="i-ph-paper-plane-right text-xl" />
         </button>
-      </div>
-    </div>
-
-    <!-- Generating State -->
-    <div
-      v-else-if="isGenerating"
-      class="p-4 text-center border-t border-stone-200 bg-stone-100 dark:border-stone-800 dark:bg-stone-900"
-    >
-      <div
-        class="text-sm text-stone-500 flex gap-2 items-center justify-center dark:text-stone-400"
-      >
-        <div class="i ph-spinner text-lg animate-spin" />
-        Generating your knowledge website...
       </div>
     </div>
   </div>
