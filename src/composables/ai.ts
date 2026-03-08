@@ -392,6 +392,9 @@ export function useAI() {
     conversationMessages: Message[],
     handlers: AgentToolHandlers,
     callbacks: AgentCallbacks,
+    options?: {
+      hiddenSystemPrompt?: string;
+    },
   ) {
     const apiKey = getCurrentApiKey();
     if (!apiKey) {
@@ -409,6 +412,14 @@ export function useAI() {
         role: "system",
         content: CHAT_SYSTEM_PROMPT,
       },
+      ...(options?.hiddenSystemPrompt
+        ? [
+            {
+              role: "system" as const,
+              content: options.hiddenSystemPrompt,
+            },
+          ]
+        : []),
       ...toApiMessages(conversationMessages),
     ];
 
@@ -474,19 +485,9 @@ export function useAI() {
     handlers: AgentToolHandlers,
     callbacks: AgentCallbacks,
   ) {
-    const promptMessage: Message = {
-      id: "initial-task",
-      role: "user",
-      content: buildInitialTaskPrompt(formData),
-      timestamp: Date.now(),
-      kind: "text",
-    };
-
-    await runAgentChat(
-      [...conversationMessages, promptMessage],
-      handlers,
-      callbacks,
-    );
+    await runAgentChat(conversationMessages, handlers, callbacks, {
+      hiddenSystemPrompt: buildInitialTaskPrompt(formData),
+    });
   }
 
   async function generateDescription(
