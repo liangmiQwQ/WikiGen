@@ -136,7 +136,7 @@ function isGenerating(projectId: string): boolean {
           Your Projects
         </h1>
         <p class="text-sm text-stone-500 dark:text-stone-400">
-          View and manage your generated knowledge websites
+          View agent runs and open their latest website artifacts
         </p>
       </div>
     </div>
@@ -157,13 +157,13 @@ function isGenerating(projectId: string): boolean {
         No projects yet
       </h3>
       <p class="text-sm text-stone-500 mb-6 dark:text-stone-400">
-        Create your first knowledge website to get started!
+        Start your first agent run to get started.
       </p>
       <button
         class="text-sm text-white font-medium px-5 py-2.5 rounded-md bg-stone-700 dark:bg-stone-600 hover:bg-stone-800 dark:hover:bg-stone-500"
         @click="router.push('/')"
       >
-        Create Website
+        Start Agent
       </button>
     </div>
 

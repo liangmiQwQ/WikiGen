@@ -62,11 +62,11 @@ function handleSubmit() {
         <h1
           class="text-2xl text-stone-900 font-bold mb-2 md:text-3xl dark:text-stone-100"
         >
-          Create Knowledge Website
+          Start An Agent Run
         </h1>
         <p class="text-base text-stone-600 dark:text-stone-400">
-          Fill in the details below and let AI generate a beautiful knowledge
-          website for you
+          Define the goal, then let the agent plan, generate, and iterate.
+          Website output is produced as one artifact in the run.
         </p>
       </div>
 
@@ -78,7 +78,7 @@ function handleSubmit() {
         <div class="space-y-2">
           <label class="text-sm font-medium flex gap-2 items-center">
             <div class="i-ph-text-t text-lg" />
-            Website Topic
+            Artifact Topic
           </label>
           <input
             v-model="formData.topic"
@@ -190,7 +190,7 @@ function handleSubmit() {
           :disabled="!formData.topic.trim()"
         >
           <div class="i-ph-magic-wand text-lg" />
-          Generate Website
+          Start Agent
         </button>
       </form>
     </div>

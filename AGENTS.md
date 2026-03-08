@@ -1,6 +1,6 @@
 # WikiGen Agent Guide
 
-WikiGen is a web application that can generate different kinds of webpage based on user input.
+WikiGen is an AI agent web application where chat is the core workspace and website generation is one artifact of each run.
 
 ## Project Setup
 

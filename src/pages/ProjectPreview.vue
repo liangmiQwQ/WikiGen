@@ -40,7 +40,7 @@ watch(
     >
       <RouterLink
         :to="{ name: 'ProjectChat', params: { id: conversationId } }"
-        class="text-sm text-stone-700 font-medium flex gap-1.5 w-fit items-center dark:text-stone-300 hover:text-stone-900 dark:hover:text-stone-100"
+        class="text-sm text-stone-700 font-medium p-1.5 rounded-md flex gap-1.5 w-fit transition-colors items-center dark:text-stone-300 hover:bg-stone-200 dark:hover:text-stone-100 dark:hover:bg-stone-800"
       >
         <div class="i-ph-arrow-left text-base" />
         Back to chat

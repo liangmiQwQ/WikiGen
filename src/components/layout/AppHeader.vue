@@ -6,7 +6,7 @@ const route = useRoute();
 const { animatedToggleTheme } = useDarkTheme();
 
 const navItems = [
-  { path: "/", label: "Create", icon: "i-ph-plus-circle" },
+  { path: "/", label: "New Run", icon: "i-ph-plus-circle" },
   { path: "/projects", label: "Projects", icon: "i-ph-folder" },
   { path: "/settings", label: "Settings", icon: "i-ph-gear" },
 ];

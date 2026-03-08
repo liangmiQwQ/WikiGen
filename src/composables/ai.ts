@@ -8,6 +8,14 @@ interface StreamCallbacks {
   onError: (error: Error) => void;
 }
 
+const AGENT_SYSTEM_PROMPT = `You are WikiGen Agent, a product-building AI assistant.
+Always behave like an agent:
+1) First explain your understanding and short execution plan in natural language.
+2) Then provide the final complete HTML artifact in a \`\`\`html code block when website generation is requested.
+3) Keep explanations concise, practical, and user-facing.
+4) Do not output only code without explanation.
+5) Preserve previous user constraints and avoid unnecessary rewrites.`;
+
 function generatePreviewUrl(html: string): string {
   const blob = new Blob([html], { type: "text/html" });
   return URL.createObjectURL(blob);
@@ -30,6 +38,20 @@ export function extractHtmlFromResponse(content: string): string | null {
   return null;
 }
 
+export function toChatNarrative(content: string): string {
+  const htmlRemoved = content
+    .replaceAll(/```html[\s\S]*?```/gi, "")
+    .replaceAll(/```[\s\S]*?```/g, (block) => {
+      return /<html|<!doctype html/i.test(block) ? "" : block;
+    })
+    .trim();
+
+  if (htmlRemoved) return htmlRemoved;
+  if (extractHtmlFromResponse(content))
+    return "Updated the website artifact. Open the Live Website panel to review.";
+  return "Completed.";
+}
+
 function buildWebsitePrompt(formData: WebsiteFormData): string {
   const sectionsText =
     formData.keySections.length > 0
@@ -43,7 +65,9 @@ function buildWebsitePrompt(formData: WebsiteFormData): string {
     colorful: "vibrant and colorful with engaging visual elements",
   };
 
-  return `Create a complete, self-contained 知识类网站 (knowledge-based website) about "${formData.topic}".
+  return `You are running an agent task to create a website artifact.
+
+Task: Create a complete, self-contained 知识类网站 (knowledge-based website) about "${formData.topic}".
 
 Target Audience: ${formData.targetAudience}
 Style: ${styleMap[formData.stylePreference] || styleMap.modern}${sectionsText}
@@ -60,7 +84,11 @@ Requirements:
 6. The website should be educational and informative
 7. Use a clean, readable color scheme appropriate for a knowledge website
 
-IMPORTANT: Wrap your complete HTML code in triple backticks with the html language identifier like this:
+Response format:
+1) Briefly state: understanding, plan, and key implementation choices (short bullet list).
+2) Then output the complete HTML in a single html code block.
+
+IMPORTANT: Put your full HTML code in triple backticks with html identifier:
 \`\`\`html
 [Your HTML code here]
 \`\`\``;
@@ -71,7 +99,9 @@ function buildModificationPrompt(
   modificationRequest: string,
   conversationHistory: string,
 ): string {
-  return `I have an existing 知识类网站 (knowledge-based website) that I want to modify.
+  return `You are running an agent update task for an existing website artifact.
+
+I have an existing 知识类网站 (knowledge-based website) that I want to modify.
 
 Here is the current HTML code:
 \`\`\`html
@@ -89,7 +119,11 @@ Please provide the complete updated HTML code with the requested changes. Make s
 3. Return the FULL HTML code, not just the changes
 4. Wrap your complete HTML code in triple backticks with the html language identifier
 
-IMPORTANT: Wrap your complete HTML code in triple backticks with the html language identifier like this:
+Response format:
+1) Briefly state: what will change and what will stay unchanged.
+2) Then output the full updated HTML in one html code block.
+
+IMPORTANT: Put your full updated HTML in triple backticks with html identifier:
 \`\`\`html
 [Your updated HTML code here]
 \`\`\``;
@@ -111,8 +145,7 @@ async function streamDeepseek(
       messages: [
         {
           role: "system",
-          content:
-            "You are an expert web developer specializing in creating educational and knowledge-based websites. You create clean, modern, responsive HTML websites with excellent user experience. Always provide complete, self-contained HTML code that can be directly rendered in a browser.",
+          content: AGENT_SYSTEM_PROMPT,
         },
         { role: "user", content: message },
       ],
@@ -181,8 +214,7 @@ async function streamMoonshot(
       messages: [
         {
           role: "system",
-          content:
-            "You are an expert web developer specializing in creating educational and knowledge-based websites. You create clean, modern, responsive HTML websites with excellent user experience. Always provide complete, self-contained HTML code that can be directly rendered in a browser.",
+          content: AGENT_SYSTEM_PROMPT,
         },
         { role: "user", content: message },
       ],

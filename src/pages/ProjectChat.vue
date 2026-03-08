@@ -2,7 +2,11 @@
 import { computed, onBeforeUnmount, ref, watch } from "vue";
 import { RouterLink, useRoute, useRouter } from "vue-router";
 import ChatInterface from "../components/chat/ChatInterface.vue";
-import { extractHtmlFromResponse, useAI } from "../composables/ai";
+import {
+  extractHtmlFromResponse,
+  toChatNarrative,
+  useAI,
+} from "../composables/ai";
 import { useChat } from "../composables/chat";
 import { useProjects } from "../composables/projects";
 
@@ -21,9 +25,16 @@ const { generateWebsite, generateDescription } = useAI();
 
 const conversationId = computed(() => route.params.id as string);
 const isBootstrappingGeneration = ref(false);
+const isFloatingPreviewOpen = ref(false);
 
 const conversation = computed(() => {
   return conversations.value.find((c) => c.id === conversationId.value) || null;
+});
+
+const statusLabel = computed(() => {
+  if (conversation.value?.status === "generating") return "Generating";
+  if (conversation.value?.status === "completed") return "Ready";
+  return "Draft";
 });
 
 watch(
@@ -56,6 +67,7 @@ watch(
 async function runInitialGeneration() {
   const currentConversation = conversation.value;
   if (!currentConversation) return;
+
   if (!currentConversation.initialFormData) {
     updateConversationStatus(currentConversation.id, "creating");
     addMessage(currentConversation.id, {
@@ -68,12 +80,12 @@ async function runInitialGeneration() {
 
   isBootstrappingGeneration.value = true;
   const formData = currentConversation.initialFormData;
-  const isFirstWebsite = !currentConversation.website;
 
   let fullResponse = "";
   const assistantMessage = addMessage(currentConversation.id, {
     role: "assistant",
-    content: "",
+    content:
+      "好的，我们来创建网站。先确认目标和结构，然后我会给出可直接运行的网站版本。",
   });
 
   try {
@@ -81,9 +93,6 @@ async function runInitialGeneration() {
       generateWebsite(formData, {
         onChunk: (chunk) => {
           fullResponse += chunk;
-          if (assistantMessage) {
-            assistantMessage.content += chunk;
-          }
         },
         onComplete: () => resolve(),
         onError: (error) => reject(error),
@@ -91,6 +100,11 @@ async function runInitialGeneration() {
     });
 
     await websitePromise;
+
+    if (assistantMessage) {
+      assistantMessage.content = toChatNarrative(fullResponse);
+    }
+
     const html = extractHtmlFromResponse(fullResponse);
 
     if (!html) {
@@ -102,9 +116,7 @@ async function runInitialGeneration() {
       return;
     }
 
-    if (assistantMessage) {
-      assistantMessage.extractedHtml = html;
-    }
+    if (assistantMessage) assistantMessage.extractedHtml = html;
 
     let description = `Knowledge website about ${formData.topic}`;
     try {
@@ -123,16 +135,12 @@ async function runInitialGeneration() {
       createProject(formData.topic, description, html, currentConversation.id);
     }
 
-    if (isFirstWebsite) {
-      router.push({
-        name: "ProjectPreview",
-        params: { id: currentConversation.id },
-      });
-    }
+    isFloatingPreviewOpen.value = true;
   } catch (error) {
     updateConversationStatus(currentConversation.id, "creating");
     const errorMessage =
       error instanceof Error ? error.message : "Unknown error";
+
     if (assistantMessage) {
       assistantMessage.content = `Error: ${errorMessage}`;
     } else {
@@ -147,9 +155,8 @@ async function runInitialGeneration() {
 }
 
 function handleWebsiteModified(html: string, description: string) {
-  if (conversation.value) {
-    updateWebsiteHtml(conversation.value.id, html, description);
-  }
+  if (!conversation.value) return;
+  updateWebsiteHtml(conversation.value.id, html, description);
 }
 
 const previewUrl = ref("");
@@ -189,10 +196,9 @@ function goToPreview() {
       <div class="flex gap-3 min-w-0 items-center">
         <RouterLink
           to="/projects"
-          class="text-sm text-stone-600 font-medium flex gap-1.5 items-center dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-200"
+          class="text-stone-600 p-1.5 rounded-md flex transition-colors items-center dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-stone-800"
         >
           <div class="i-ph-arrow-left text-base" />
-          Projects
         </RouterLink>
         <h1
           class="text-sm text-stone-900 font-semibold truncate dark:text-stone-100"
@@ -200,39 +206,21 @@ function goToPreview() {
           {{ conversation?.website?.name || conversation?.title || "Untitled" }}
         </h1>
       </div>
-      <button
-        class="text-xs text-stone-700 font-medium px-3 py-1.5 border border-stone-300 rounded-md flex gap-1.5 transition-colors items-center dark:text-stone-200 dark:border-stone-700 hover:bg-stone-200 disabled:opacity-50 disabled:cursor-not-allowed dark:hover:bg-stone-800"
-        :disabled="!conversation?.website?.currentHtml"
-        @click="goToPreview"
-      >
-        <div class="i-ph-eye text-sm" />
-        Open Preview
-      </button>
-    </div>
-
-    <div
-      class="p-3 border-b border-stone-200 bg-stone-50 dark:border-stone-800 dark:bg-stone-900"
-    >
-      <button
-        class="border border-stone-300 rounded-md bg-white h-24 w-full transition-colors relative overflow-hidden dark:border-stone-700 hover:border-stone-500 dark:bg-stone-800 disabled:cursor-not-allowed"
-        :disabled="!conversation?.website?.currentHtml"
-        @click="goToPreview"
-      >
-        <iframe
-          v-if="previewUrl"
-          :src="previewUrl"
-          sandbox="allow-scripts"
-          title="Mini Website Preview"
-          class="border-0 h-full w-full pointer-events-none"
-        />
-        <div
-          v-else
-          class="text-xs text-stone-500 flex gap-2 h-full items-center justify-center dark:text-stone-400"
+      <div class="flex gap-2 items-center">
+        <span
+          class="text-xs text-stone-700 px-2.5 py-1 border border-stone-300 rounded-full bg-stone-100 dark:text-stone-300 dark:border-stone-700 dark:bg-stone-800"
         >
-          <div class="i-ph-spinner text-base animate-spin" />
-          Preview will appear after generation
-        </div>
-      </button>
+          {{ statusLabel }}
+        </span>
+        <button
+          class="text-xs text-stone-700 font-medium px-3 py-1.5 border border-stone-300 rounded-md flex gap-1.5 transition-colors items-center dark:text-stone-200 dark:border-stone-700 hover:bg-stone-200 disabled:opacity-50 disabled:cursor-not-allowed dark:hover:bg-stone-800"
+          :disabled="!conversation?.website?.currentHtml"
+          @click="goToPreview"
+        >
+          <div class="i-ph-arrows-out-simple text-sm" />
+          Full Preview
+        </button>
+      </div>
     </div>
 
     <div class="flex-1 min-h-0">
@@ -240,6 +228,52 @@ function goToPreview() {
         v-if="conversation"
         :conversation="conversation"
         @website-modified="handleWebsiteModified"
+      />
+    </div>
+
+    <button
+      v-if="previewUrl && !isFloatingPreviewOpen"
+      class="text-sm text-white px-3 py-2 rounded-lg bg-stone-700 flex gap-2 shadow-lg items-center bottom-4 right-4 fixed z-40 dark:bg-stone-600 hover:bg-stone-800 dark:hover:bg-stone-500"
+      @click="isFloatingPreviewOpen = true"
+    >
+      <div class="i-ph-globe text-base" />
+      Open Website
+    </button>
+
+    <div
+      v-if="previewUrl && isFloatingPreviewOpen"
+      class="border border-stone-300 rounded-xl bg-white w-[min(92vw,460px)] shadow-2xl bottom-4 right-4 fixed z-40 overflow-hidden dark:border-stone-700 dark:bg-stone-900"
+    >
+      <div
+        class="px-3 py-2 border-b border-stone-200 bg-stone-100 flex items-center justify-between dark:border-stone-800 dark:bg-stone-800"
+      >
+        <div
+          class="text-sm text-stone-800 font-medium flex gap-1.5 items-center dark:text-stone-100"
+        >
+          <div class="i-ph-globe text-base" />
+          Live Website
+        </div>
+        <div class="flex gap-1 items-center">
+          <button
+            class="text-xs text-stone-600 px-2 py-1 rounded dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-700"
+            @click="goToPreview"
+          >
+            Full
+          </button>
+          <button
+            class="text-stone-600 p-1.5 rounded dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-700"
+            @click="isFloatingPreviewOpen = false"
+          >
+            <div class="i-ph-x text-base" />
+          </button>
+        </div>
+      </div>
+
+      <iframe
+        :src="previewUrl"
+        sandbox="allow-scripts"
+        title="Floating Website Preview"
+        class="border-0 h-[320px] w-full"
       />
     </div>
   </div>

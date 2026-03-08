@@ -1,9 +1,21 @@
 <script setup lang="ts">
 import MarkdownRender from "markstream-vue";
 import { computed, nextTick, ref, watch } from "vue";
-import { extractHtmlFromResponse, useAI } from "../../composables/ai";
+import {
+  extractHtmlFromResponse,
+  toChatNarrative,
+  useAI,
+} from "../../composables/ai";
 import { useChat } from "../../composables/chat";
 import type { Conversation } from "../../types";
+
+type AgentProcessEvent = {
+  id: string;
+  status: "running" | "done" | "error";
+  title: string;
+  detail: string;
+  timestamp: number;
+};
 
 const props = defineProps<{
   conversation: Conversation | null;
@@ -11,6 +23,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   websiteModified: [html: string, description: string];
+  processEvent: [event: AgentProcessEvent];
 }>();
 
 const { isStreaming, modifyWebsite } = useAI();
@@ -24,14 +37,13 @@ const isGenerating = computed(
   () => props.conversation?.status === "generating",
 );
 const isInputDisabled = computed(
-  () => isStreaming.value || props.conversation?.status !== "completed",
+  () => isStreaming.value || !props.conversation,
 );
 const inputPlaceholder = computed(() => {
   if (props.conversation?.status === "generating")
-    return "Generating website... chat input will unlock when done";
-  if (props.conversation?.status !== "completed")
-    return "Chat is currently unavailable";
-  return "Request modifications to your website...";
+    return "Agent is building your first website artifact...";
+  if (!props.conversation) return "Conversation unavailable";
+  return "Ask the agent to improve content, style, layout, or behavior...";
 });
 
 watch(
@@ -49,48 +61,109 @@ async function scrollToBottom() {
 }
 
 async function handleSendModification() {
-  const content = inputMessage.value.trim();
-  if (!content || !props.conversation?.website || isStreaming.value) return;
+  const request = inputMessage.value.trim();
+  const currentHtml = props.conversation?.website?.currentHtml || "";
+  if (!request || !props.conversation || isStreaming.value) return;
 
-  const currentHtml = props.conversation.website.currentHtml;
   const conversationId = props.conversation.id;
 
-  // Add user message using composable
   addMessage(conversationId, {
     role: "user",
-    content,
+    content: request,
   });
 
   inputMessage.value = "";
 
-  // Add placeholder for assistant response
+  const requestTime = Date.now();
+  emit("processEvent", {
+    id: `${conversationId}-request-${requestTime}`,
+    status: "running",
+    title: "Analyzing request",
+    detail: request,
+    timestamp: requestTime,
+  });
+
+  if (!currentHtml) {
+    addMessage(conversationId, {
+      role: "assistant",
+      content:
+        "I can chat now, but there is no website artifact yet. Wait for initial generation to complete, then I can apply your changes directly to the site.",
+    });
+    emit("processEvent", {
+      id: `${conversationId}-request-no-artifact-${Date.now()}`,
+      status: "error",
+      title: "No artifact yet",
+      detail: "Initial website generation is still in progress.",
+      timestamp: Date.now(),
+    });
+    return;
+  }
+
   const assistantMessage = addMessage(conversationId, {
     role: "assistant",
-    content: "",
+    content: "Working on your request...",
   });
 
   if (!assistantMessage) return;
+  let fullAssistantResponse = "";
 
-  // Build conversation history
   const conversationHistory = props.conversation.messages
     .slice(0, -2)
     .map((m) => `${m.role}: ${m.content}`)
     .join("\n\n");
 
-  // Stream the modification
-  await modifyWebsite(currentHtml, content, conversationHistory, {
+  emit("processEvent", {
+    id: `${conversationId}-generation-${Date.now()}`,
+    status: "running",
+    title: "Running website update",
+    detail: "Agent is preparing an updated artifact.",
+    timestamp: Date.now(),
+  });
+
+  await modifyWebsite(currentHtml, request, conversationHistory, {
     onChunk: (chunk) => {
-      assistantMessage.content += chunk;
+      fullAssistantResponse += chunk;
     },
     onComplete: () => {
-      const html = extractHtmlFromResponse(assistantMessage.content);
+      assistantMessage.content = toChatNarrative(fullAssistantResponse);
+      emit("processEvent", {
+        id: `${conversationId}-response-${Date.now()}`,
+        status: "done",
+        title: "Model response complete",
+        detail: "Reviewing response for updated website artifact.",
+        timestamp: Date.now(),
+      });
+
+      const html = extractHtmlFromResponse(fullAssistantResponse);
       if (html) {
         assistantMessage.extractedHtml = html;
-        emit("websiteModified", html, content);
+        emit("websiteModified", html, request);
+        emit("processEvent", {
+          id: `${conversationId}-artifact-${Date.now()}`,
+          status: "done",
+          title: "Artifact updated",
+          detail: "Website artifact was updated from this response.",
+          timestamp: Date.now(),
+        });
+      } else {
+        emit("processEvent", {
+          id: `${conversationId}-artifact-none-${Date.now()}`,
+          status: "done",
+          title: "No artifact update",
+          detail: "Assistant replied without website code changes.",
+          timestamp: Date.now(),
+        });
       }
     },
     onError: (error) => {
       assistantMessage.content = `Error: ${error.message}`;
+      emit("processEvent", {
+        id: `${conversationId}-error-${Date.now()}`,
+        status: "error",
+        title: "Agent request failed",
+        detail: error.message,
+        timestamp: Date.now(),
+      });
     },
   });
 }
@@ -110,7 +183,6 @@ function handleKeydown(e: KeyboardEvent) {
       ref="messagesContainer"
       class="p-4 flex flex-1 flex-col gap-3 overflow-y-auto md:p-6 md:gap-4"
     >
-      <!-- Empty State -->
       <div
         v-if="messages.length === 0"
         class="text-stone-500 p-8 text-center flex flex-1 flex-col items-center justify-center"
@@ -123,18 +195,17 @@ function handleKeydown(e: KeyboardEvent) {
         <h3
           class="text-lg text-stone-900 font-semibold mb-2 dark:text-stone-100"
         >
-          {{ isGenerating ? "Generating Website" : "AI Agent" }}
+          {{ isGenerating ? "Agent Is Building" : "Agent Workspace" }}
         </h3>
         <p class="text-sm text-stone-600 dark:text-stone-400">
           {{
             isGenerating
-              ? "Creating your first website now. You can start editing once generation finishes."
-              : "Your website has been generated. You can request modifications here."
+              ? "Creating the first website artifact now."
+              : "Chat with the agent. Website changes are one of several possible outputs."
           }}
         </p>
       </div>
 
-      <!-- Message List -->
       <template v-else>
         <div v-for="message in messages" :key="message.id" class="flex gap-3">
           <div class="flex flex-shrink-0 h-6 w-6 items-center justify-center">
@@ -153,13 +224,12 @@ function handleKeydown(e: KeyboardEvent) {
                 class="text-xs text-stone-600 px-2 py-1 rounded bg-stone-100 flex gap-1 w-fit items-center dark:text-stone-400 dark:bg-stone-800"
               >
                 <div class="i-ph-check-circle" />
-                HTML Updated
+                Artifact Updated
               </span>
             </div>
           </div>
         </div>
 
-        <!-- Loading Indicator -->
         <div v-if="isStreaming" class="p-3 flex gap-1 self-start">
           <span
             class="rounded-full bg-stone-400 h-2 w-2 animate-bounce dark:bg-stone-600"
