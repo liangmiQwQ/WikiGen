@@ -10,22 +10,26 @@ const defaultSettings: Settings = {
 };
 
 function migrateFromOldFormat(storedValue: unknown): Settings {
+  if (typeof storedValue !== "object" || storedValue === null) {
+    return { ...defaultSettings };
+  }
+
   const value = storedValue as {
     provider?: string;
     apiKey?: string;
     apiKeys?: Record<string, string>;
   };
 
-  if (storedValue && typeof storedValue.apiKey === "string") {
+  if (typeof value.apiKey === "string") {
     return {
       apiKeys: {
         ...defaultApiKeys,
-        deepseek: value.apiKey ?? "",
+        deepseek: value.apiKey,
       },
     };
   }
 
-  if (value?.apiKeys) {
+  if (value.apiKeys && typeof value.apiKeys === "object") {
     return {
       apiKeys: {
         ...defaultApiKeys,
