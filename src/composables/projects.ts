@@ -37,6 +37,13 @@ export function useProjects() {
     }
   }
 
+  function renameProject(id: string, newName: string) {
+    const project = projects.value.find((p) => p.id === id);
+    if (project) {
+      project.name = newName;
+    }
+  }
+
   function getProjectById(id: string): Project | undefined {
     return projects.value.find((p) => p.id === id);
   }
@@ -52,6 +59,7 @@ export function useProjects() {
     createProject,
     updateProject,
     deleteProject,
+    renameProject,
     getProjectById,
     getProjectByConversationId,
   };

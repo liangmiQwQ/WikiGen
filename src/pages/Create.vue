@@ -4,6 +4,7 @@ import { useRouter } from "vue-router";
 import CreationForm from "../components/creation/CreationForm.vue";
 import { useAI } from "../composables/ai";
 import { useChat } from "../composables/chat";
+import { useProjects } from "../composables/projects";
 import type { WebsiteFormData } from "../types";
 
 const router = useRouter();
@@ -13,7 +14,9 @@ const {
   setWebsiteData,
   addMessage,
 } = useChat();
-const { generateWebsite, extractHtmlFromResponse } = useAI();
+const { generateWebsite, generateDescription, extractHtmlFromResponse } =
+  useAI();
+const { createProject } = useProjects();
 
 const isGenerating = ref(false);
 const generationError = ref("");
@@ -25,57 +28,67 @@ async function handleFormSubmit(formData: WebsiteFormData) {
   const conversationId = createConversation(formData);
   updateConversationStatus(conversationId, "generating");
 
-  // Navigate to generating page
+  // Navigate to generating page first
   router.push({
     name: "Generating",
     params: { id: conversationId },
-    query: { topic: formData.topic },
   });
 
-  // Generate website
+  // Generate description and website in parallel
   let fullResponse = "";
+  let aiDescription = "";
 
   try {
-    await generateWebsite(formData, {
-      onChunk: (chunk) => {
-        fullResponse += chunk;
-      },
-      onComplete: () => {
-        const html = extractHtmlFromResponse(fullResponse);
-        if (html) {
-          // Add the generation as a message
-          addMessage(conversationId, {
-            role: "assistant",
-            content: fullResponse,
-            extractedHtml: html,
-          });
-
-          // Set website data
-          setWebsiteData(conversationId, {
-            name: formData.topic,
-            description: `Knowledge website about ${formData.topic}`,
-            html,
-          });
-
-          updateConversationStatus(conversationId, "completed");
-
-          // Navigate to preview page
-          router.push({
-            name: "Preview",
-            params: { id: conversationId },
-          });
-        } else {
-          generationError.value = "Failed to extract HTML from response";
-          updateConversationStatus(conversationId, "creating");
-          isGenerating.value = false;
-        }
-      },
-      onError: (error) => {
-        generationError.value = error.message;
-        updateConversationStatus(conversationId, "creating");
-        isGenerating.value = false;
-      },
+    // Start both operations
+    const descriptionPromise = generateDescription(formData);
+    const websitePromise = new Promise<void>((resolve, reject) => {
+      generateWebsite(formData, {
+        onChunk: (chunk) => {
+          fullResponse += chunk;
+        },
+        onComplete: () => resolve(),
+        onError: (error) => reject(error),
+      });
     });
+
+    // Wait for both to complete
+    const [description] = await Promise.all([
+      descriptionPromise,
+      websitePromise,
+    ]);
+    aiDescription = description;
+
+    const html = extractHtmlFromResponse(fullResponse);
+    if (html) {
+      // Add the generation as a message
+      addMessage(conversationId, {
+        role: "assistant",
+        content: fullResponse,
+        extractedHtml: html,
+      });
+
+      // Set website data with AI description
+      setWebsiteData(conversationId, {
+        name: formData.topic,
+        description: aiDescription,
+        html,
+      });
+
+      // Create project with AI description and HTML
+      createProject(formData.topic, aiDescription, html, conversationId);
+
+      updateConversationStatus(conversationId, "completed");
+
+      // Navigate to preview page
+      router.push({
+        name: "Preview",
+        params: { id: conversationId },
+      });
+    } else {
+      generationError.value = "Failed to extract HTML from response";
+      updateConversationStatus(conversationId, "creating");
+      isGenerating.value = false;
+    }
   } catch (error) {
     generationError.value =
       error instanceof Error ? error.message : "Unknown error";

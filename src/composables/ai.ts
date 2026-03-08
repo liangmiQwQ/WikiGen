@@ -270,6 +270,36 @@ export function useAI() {
     await streamChat(prompt, callbacks);
   }
 
+  function generateDescription(formData: WebsiteFormData): Promise<string> {
+    const apiKey = getCurrentApiKey();
+    if (!apiKey) {
+      return Promise.reject(
+        new Error("API key not configured for the selected provider"),
+      );
+    }
+
+    const prompt = `Write a very short, catchy one-sentence description (max 80 characters) for a knowledge website about "${formData.topic}". Target audience: ${formData.targetAudience || "general audience"}. Style: ${formData.stylePreference}. Respond with ONLY the description text, no quotes or additional formatting.`;
+
+    let fullResponse = "";
+
+    return new Promise((resolve, reject) => {
+      streamChat(prompt, {
+        onChunk: (chunk) => {
+          fullResponse += chunk;
+        },
+        onComplete: () => {
+          const description = fullResponse
+            .trim()
+            .replaceAll(/^["']|["']$/g, "");
+          resolve(description || `Knowledge website about ${formData.topic}`);
+        },
+        onError: (error) => {
+          reject(error);
+        },
+      });
+    });
+  }
+
   async function modifyWebsite(
     currentHtml: string,
     modificationRequest: string,
@@ -288,6 +318,7 @@ export function useAI() {
     isStreaming,
     streamChat,
     generateWebsite,
+    generateDescription,
     modifyWebsite,
     generatePreviewUrl,
     extractHtmlFromResponse,
