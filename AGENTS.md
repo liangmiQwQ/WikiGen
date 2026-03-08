@@ -12,9 +12,12 @@ This project use UnoCSS for styling. We use `wind4` present and enabled `presetA
 
 This project use `vue@3.5` stable version with standard compiler.
 
+Keep AGENTS.md updated with project status. Consider if there is need to modify AGENTS.md.
+
 ## UI Guidelines
 
 - **Icons**: Use Phosphor icons via UnoCSS (e.g., `i-ph-chat`, `i-ph-gear`). Available icons: https://icones.js.org/collection/ph
 - **Responsive**: Design for both mobile and desktop simultaneously using responsive breakpoints
 - **No emojis**: Use icons instead of emojis throughout the UI
 - **Theme color**: Use UnoCSS `stone` color as theme color.
+- **Background color**: Use `bg-stone-100` or `bg-stone-200` and avoid `300` or darker color in light mode if possible; Use `bg-stone-900` or `bg-stone-800` and avoid `700` or lighter in dark mode if possible.
