@@ -122,7 +122,7 @@ function toggleChat() {
 </script>
 
 <template>
-  <div class="h-[calc(100vh-64px)] overflow-hidden">
+  <div class="h-full overflow-hidden">
     <!-- Error Toast -->
     <div
       v-if="generationError"
@@ -141,7 +141,7 @@ function toggleChat() {
     </div>
 
     <!-- View: Form -->
-    <div v-if="viewMode === 'form'" class="h-full">
+    <div v-if="viewMode === 'form'" py-4 h-full overflow-y-scroll>
       <CreationForm @submit="handleFormSubmit" />
     </div>
 

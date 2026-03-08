@@ -48,7 +48,7 @@ function handleSubmit() {
 </script>
 
 <template>
-  <div class="p-4 h-full overflow-y-auto md:p-6">
+  <div class="p-4 md:(p-6 h-full)" flex="~ items-center justify-center">
     <div class="mx-auto max-w-2xl">
       <div class="mb-8 text-center">
         <div
