@@ -11,6 +11,7 @@ Run `pnpm run lint:fix` and `pnpm run typecheck` after modifying code. And fix t
 This project use UnoCSS for styling. We use `wind4` present and enabled `presetAttributify` and `transformerVariantGroup`. Load UnoCSS skills if you want to modify styles to use the preset and transformer correctly and as much as possible.
 
 This project use `vue@3.5` stable version with standard compiler.
+AI provider is DeepSeek-only. Keep model prompts in dedicated files under `src/prompts/` instead of inline component/composable strings.
 
 Keep AGENTS.md updated with the project codebase. Consider if there is need to modify AGENTS.md after your changes. Don't write something weird like project structure or project status in AGENTS.md.
 

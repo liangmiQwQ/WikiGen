@@ -4,6 +4,8 @@ export interface Message {
   content: string;
   timestamp: number;
   extractedHtml?: string;
+  kind?: "text" | "tool-run";
+  toolRun?: ToolRun;
 }
 
 export interface WebsiteVersion {
@@ -17,6 +19,17 @@ export interface Conversation {
   id: string;
   title: string;
   messages: Message[];
+  workspace: {
+    files: Record<string, string>;
+  };
+  htmlSnapshots: Record<
+    string,
+    {
+      html: string;
+      versionCount: number;
+      timestamp: number;
+    }
+  >;
   initialFormData?: WebsiteFormData;
   website?: {
     name: string;
@@ -41,16 +54,13 @@ export interface Project {
 
 export interface ApiKeys {
   deepseek: string;
-  "moonshot-cn": string;
-  moonshot: string;
 }
 
 export interface Settings {
-  provider: AIProvider;
   apiKeys: ApiKeys;
 }
 
-export type AIProvider = "deepseek" | "moonshot-cn" | "moonshot";
+export type AIProvider = "deepseek";
 
 export interface WebsiteFormData {
   topic: string;
@@ -58,4 +68,21 @@ export interface WebsiteFormData {
   keySections: string[];
   stylePreference: "modern" | "classic" | "minimal" | "colorful";
   additionalRequirements: string;
+}
+
+export interface ToolRunStep {
+  id: string;
+  title: string;
+  detail: string;
+  status: "running" | "done" | "error";
+  timestamp: number;
+}
+
+export interface ToolRun {
+  id: string;
+  status: "running" | "done" | "error";
+  title: string;
+  steps: ToolRunStep[];
+  startedAt: number;
+  updatedAt: number;
 }

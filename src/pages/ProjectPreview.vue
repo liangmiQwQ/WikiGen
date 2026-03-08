@@ -36,15 +36,20 @@ watch(
 <template>
   <div class="bg-stone-100 flex flex-col h-full dark:bg-stone-900">
     <div
-      class="px-4 py-3 border-b border-stone-200 bg-stone-50 dark:border-stone-800 dark:bg-stone-900"
+      class="bg-stone-50/85 overflow-hidden backdrop-blur-md dark:bg-stone-900/85"
     >
-      <RouterLink
-        :to="{ name: 'ProjectChat', params: { id: conversationId } }"
-        class="text-sm text-stone-700 font-medium p-1.5 rounded-md flex gap-1.5 w-fit transition-colors items-center dark:text-stone-300 hover:bg-stone-200 dark:hover:text-stone-100 dark:hover:bg-stone-800"
-      >
-        <div class="i-ph-arrow-left text-base" />
-        Back to chat
-      </RouterLink>
+      <div class="px-4 py-3">
+        <RouterLink
+          :to="{ name: 'ProjectChat', params: { id: conversationId } }"
+          class="text-sm text-stone-700 font-medium p-1.5 rounded-md flex gap-1.5 w-fit transition-colors items-center dark:text-stone-300 hover:bg-stone-200 dark:hover:text-stone-100 dark:hover:bg-stone-800"
+        >
+          <div class="i-ph-arrow-left text-base" />
+          Back to chat
+        </RouterLink>
+      </div>
+      <div
+        class="h-6 from-stone-200/60 to-transparent bg-gradient-to-b dark:from-stone-950/70"
+      />
     </div>
     <div class="flex-1 min-h-0 overflow-hidden">
       <WebsiteViewer v-if="conversation" :conversation="conversation" />

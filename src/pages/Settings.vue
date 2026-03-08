@@ -1,24 +1,8 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { useSettings } from "../composables/settings";
-import type { AIProvider } from "../types";
 
-const { settings, updateProvider, updateApiKey, resetSettings } = useSettings();
-
-const providers: { value: AIProvider; label: string }[] = [
-  { value: "deepseek", label: "DeepSeek" },
-  { value: "moonshot-cn", label: "Moonshot AI (China)" },
-  { value: "moonshot", label: "Moonshot AI" },
-];
-
-const providerLinks: Record<AIProvider, { url: string; label: string }> = {
-  deepseek: { url: "https://platform.deepseek.com/", label: "DeepSeek" },
-  "moonshot-cn": {
-    url: "https://platform.moonshot.cn/",
-    label: "Moonshot AI (China)",
-  },
-  moonshot: { url: "https://platform.moonshot.com/", label: "Moonshot AI" },
-};
+const { settings, updateApiKey, resetSettings } = useSettings();
 
 const theme = {
   card: "bg-stone-100 border-stone-200 dark:bg-stone-900 dark:border-stone-800",
@@ -35,20 +19,11 @@ const theme = {
 };
 
 const currentApiKey = computed({
-  get: () => settings.value.apiKeys[settings.value.provider],
+  get: () => settings.value.apiKeys.deepseek,
   set: (value: string) => {
-    updateApiKey(settings.value.provider, value);
+    updateApiKey("deepseek", value);
   },
 });
-
-const currentProviderLink = computed(
-  () => providerLinks[settings.value.provider],
-);
-
-function handleProviderChange(e: Event) {
-  const target = e.target as HTMLSelectElement;
-  updateProvider(target.value as AIProvider);
-}
 </script>
 
 <template>
@@ -63,35 +38,12 @@ function handleProviderChange(e: Event) {
           class="text-base font-semibold mb-4 pb-3 border-b"
           :class="[theme.subtitle, theme.divider]"
         >
-          AI Provider
+          AI Model
         </h2>
 
         <div class="mb-6">
           <label class="text-sm font-medium mb-2 block" :class="theme.label">
-            Select Provider
-          </label>
-          <select
-            :value="settings.provider"
-            class="text-sm px-3.5 py-2.5 border rounded-lg w-full focus:outline-none"
-            :class="theme.input"
-            @change="handleProviderChange"
-          >
-            <option
-              v-for="provider in providers"
-              :key="provider.value"
-              :value="provider.value"
-            >
-              {{ provider.label }}
-            </option>
-          </select>
-          <p class="text-xs mt-2" :class="theme.hint">
-            Choose your preferred AI service for generating websites
-          </p>
-        </div>
-
-        <div class="mb-6">
-          <label class="text-sm font-medium mb-2 block" :class="theme.label">
-            API Key
+            DeepSeek API Key
           </label>
           <input
             v-model="currentApiKey"
@@ -105,13 +57,13 @@ function handleProviderChange(e: Event) {
           </p>
           <div class="mt-2">
             <a
-              :href="currentProviderLink.url"
+              href="https://platform.deepseek.com/"
               target="_blank"
               rel="noopener"
               class="text-xs hover:underline"
               :class="theme.link"
             >
-              Get {{ currentProviderLink.label }} API Key →
+              Get DeepSeek API Key →
             </a>
           </div>
         </div>

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 import { useRouter } from "vue-router";
+import ScaledPreviewFrame from "../components/viewer/ScaledPreviewFrame.vue";
 import { useChat } from "../composables/chat";
 import { useProjects } from "../composables/projects";
 
@@ -107,11 +108,6 @@ function toggleActionsMenu(projectId: string, event: MouseEvent) {
   }
 }
 
-function getPreviewUrl(html: string): string {
-  const blob = new Blob([html], { type: "text/html" });
-  return URL.createObjectURL(blob);
-}
-
 function isGenerating(projectId: string): boolean {
   const project = projects.value.find((p) => p.id === projectId);
   if (!project) return false;
@@ -177,11 +173,10 @@ function isGenerating(projectId: string): boolean {
         <!-- Preview -->
         <div class="h-48 w-full relative overflow-hidden">
           <template v-if="project.html">
-            <iframe
-              :src="getPreviewUrl(project.html)"
-              sandbox="allow-scripts"
+            <ScaledPreviewFrame
+              :html="project.html"
               title="Project Preview"
-              class="border-0 h-full w-full pointer-events-none"
+              class="pointer-events-none"
             />
           </template>
           <template v-else>

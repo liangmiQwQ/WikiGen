@@ -3,55 +3,33 @@ import type { AIProvider, ApiKeys, Settings } from "../types";
 
 const defaultApiKeys: ApiKeys = {
   deepseek: "",
-  "moonshot-cn": "",
-  moonshot: "",
 };
 
 const defaultSettings: Settings = {
-  provider: "deepseek",
   apiKeys: { ...defaultApiKeys },
 };
 
-function migrateFromOldFormat(storedValue: any): Settings {
-  // Check if it's the old format with single apiKey
+function migrateFromOldFormat(storedValue: unknown): Settings {
+  const value = storedValue as {
+    provider?: string;
+    apiKey?: string;
+    apiKeys?: Record<string, string>;
+  };
+
   if (storedValue && typeof storedValue.apiKey === "string") {
-    const oldProvider = storedValue.provider as string;
-    const oldApiKey = storedValue.apiKey as string;
-
-    // Handle old "kimi" provider
-    const newProvider: AIProvider =
-      oldProvider === "kimi" || oldProvider === "default"
-        ? "deepseek"
-        : (oldProvider as AIProvider);
-
-    // Migrate to new format
-    const newSettings: Settings = {
-      provider: newProvider,
-      apiKeys: { ...defaultApiKeys },
-    };
-
-    // Migrate old apiKey to appropriate provider
-    if (oldProvider === "deepseek" && oldApiKey) {
-      newSettings.apiKeys.deepseek = oldApiKey;
-    } else if (oldProvider === "kimi" && oldApiKey) {
-      newSettings.apiKeys["moonshot-cn"] = oldApiKey;
-    }
-
-    return newSettings;
-  }
-
-  // Check if apiKeys object exists but is missing some keys
-  if (storedValue && storedValue.apiKeys) {
-    // Handle "default" provider from old storage
-    const provider = storedValue.provider;
-    const validProvider: AIProvider =
-      provider === "default" || !provider ? "deepseek" : provider;
-
     return {
-      provider: validProvider,
       apiKeys: {
         ...defaultApiKeys,
-        ...storedValue.apiKeys,
+        deepseek: value.apiKey ?? "",
+      },
+    };
+  }
+
+  if (value?.apiKeys) {
+    return {
+      apiKeys: {
+        ...defaultApiKeys,
+        deepseek: value.apiKeys.deepseek || value.apiKeys["moonshot-cn"] || "",
       },
     };
   }
@@ -72,16 +50,12 @@ export function useSettings() {
     settings.value = migrated;
   }
 
-  function updateProvider(provider: AIProvider) {
-    settings.value.provider = provider;
-  }
-
   function updateApiKey(provider: AIProvider, apiKey: string) {
     settings.value.apiKeys[provider] = apiKey;
   }
 
   function getCurrentApiKey(): string {
-    return settings.value.apiKeys[settings.value.provider] || "";
+    return settings.value.apiKeys.deepseek || "";
   }
 
   function resetSettings() {
@@ -90,7 +64,6 @@ export function useSettings() {
 
   return {
     settings,
-    updateProvider,
     updateApiKey,
     getCurrentApiKey,
     resetSettings,
