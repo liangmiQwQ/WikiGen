@@ -81,3 +81,17 @@ export function buildInitialTaskPrompt(formData: WebsiteFormData): string {
 Use tools to read and patch index.html. Keep the website self-contained (HTML/CSS/JS in one file), responsive, and production-minded.
 Prefer minimal patches that touch only necessary sections.`;
 }
+
+export function buildInitialUserRequest(formData: WebsiteFormData): string {
+  const sectionsText =
+    formData.keySections.length > 0
+      ? formData.keySections.join(", ")
+      : "Introduction, key concepts, examples, and summary";
+
+  return `Build a website draft for **${formData.topic}**.
+
+- Audience: ${formData.targetAudience || "General audience"}
+- Style: ${formData.stylePreference}
+- Sections: ${sectionsText}
+- Extra requirements: ${formData.additionalRequirements || "None"}`;
+}

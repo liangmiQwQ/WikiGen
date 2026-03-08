@@ -50,3 +50,4 @@ html.dark ::-webkit-scrollbar-thumb:hover {
 .dark::view-transition-new(root) {
   z-index: 1;
 }
+

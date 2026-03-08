@@ -204,62 +204,71 @@ function handleKeydown(e: KeyboardEvent) {
     handleSend();
   }
 }
+
+function getPreviousUserMessage(messageId: string) {
+  const conversation = props.conversation;
+  if (!conversation) return null;
+
+  const currentIndex = conversation.messages.findIndex(
+    (message) => message.id === messageId,
+  );
+  if (currentIndex <= 0) return null;
+
+  for (let index = currentIndex - 1; index >= 0; index -= 1) {
+    const message = conversation.messages[index];
+    if (message.role === "user" && message.kind === "text") {
+      return message;
+    }
+  }
+
+  return null;
+}
+
+function canRegenerateAssistantMessage(message: Message) {
+  if (message.role !== "assistant" || message.kind !== "text") return false;
+  return Boolean(getPreviousUserMessage(message.id));
+}
+
+async function regenerateAssistantMessage(message: Message) {
+  const conversation = props.conversation;
+  if (!conversation || isStreaming.value) return;
+
+  const previousUserMessage = getPreviousUserMessage(message.id);
+  if (!previousUserMessage) return;
+
+  restoreFromSnapshot(conversation.id, previousUserMessage.id);
+  truncateAfterMessage(conversation.id, previousUserMessage.id);
+  await runAssistantForConversation(conversation.id);
+}
 </script>
 
 <template>
   <div class="flex flex-col h-full">
-    <div
-      ref="messagesContainer"
-      class="p-4 flex flex-1 flex-col gap-3 overflow-y-auto md:p-6 md:gap-4"
-    >
-      <div
-        v-if="messages.length === 0"
-        class="text-stone-500 p-8 text-center flex flex-1 flex-col items-center justify-center"
-      >
+    <div ref="messagesContainer" class="p-4 flex flex-1 overflow-y-auto md:p-6">
+      <div class="mx-auto flex flex-1 flex-col gap-3 max-w-5xl w-full md:gap-4">
         <div
-          class="text-3xl text-stone-600 mb-4 rounded-2xl bg-stone-200 flex h-16 w-16 items-center justify-center dark:text-stone-300 dark:bg-stone-800"
+          v-if="messages.length === 0"
+          class="text-stone-500 p-8 text-center flex flex-1 flex-col items-center justify-center"
         >
-          <div class="i-ph-robot text-2xl" />
+          <h3
+            class="text-lg text-stone-900 font-semibold mb-2 dark:text-stone-100"
+          >
+            {{ isGenerating ? "Agent Is Building" : "Agent Workspace" }}
+          </h3>
+          <p class="text-sm text-stone-600 dark:text-stone-400">
+            {{
+              isGenerating
+                ? "Creating the first website artifact now."
+                : "Chat normally, and the AI will call tools only when website edits are needed."
+            }}
+          </p>
         </div>
-        <h3
-          class="text-lg text-stone-900 font-semibold mb-2 dark:text-stone-100"
-        >
-          {{ isGenerating ? "Agent Is Building" : "Agent Workspace" }}
-        </h3>
-        <p class="text-sm text-stone-600 dark:text-stone-400">
-          {{
-            isGenerating
-              ? "Creating the first website artifact now."
-              : "Chat normally, and the AI will call tools only when website edits are needed."
-          }}
-        </p>
-      </div>
 
-      <template v-else>
-        <div
-          v-for="message in messages"
-          :key="message.id"
-          class="flex gap-3"
-          :class="message.role === 'user' ? 'justify-end' : 'justify-start'"
-        >
-          <div
-            v-if="message.role === 'assistant'"
-            class="flex flex-shrink-0 h-6 w-6 items-center justify-center"
-          >
-            <div class="i-ph-robot text-stone-400 dark:text-stone-500" />
-          </div>
-
-          <div
-            class="min-w-0"
-            :class="
-              message.role === 'assistant'
-                ? 'max-w-[min(100%,56rem)]'
-                : 'max-w-[min(100%,48rem)]'
-            "
-          >
+        <template v-else>
+          <div v-for="message in messages" :key="message.id" class="w-full">
             <template v-if="message.kind === 'tool-run' && message.toolRun">
               <div
-                class="p-3 border border-stone-200 rounded-xl bg-stone-50 dark:border-stone-700 dark:bg-stone-800"
+                class="mx-auto p-3 border border-stone-200 rounded-xl bg-stone-50 max-w-3xl dark:border-stone-700 dark:bg-stone-800"
               >
                 <div class="mb-2 flex items-center justify-between">
                   <div
@@ -312,89 +321,102 @@ function handleKeydown(e: KeyboardEvent) {
             </template>
 
             <template v-else>
-              <div
-                class="px-4 py-3 rounded-xl"
-                :class="
-                  message.role === 'user'
-                    ? 'bg-stone-200 text-stone-900 dark:bg-stone-700 dark:text-stone-100'
-                    : 'bg-transparent text-stone-900 dark:text-stone-100'
-                "
-              >
-                <template v-if="editingMessageId === message.id">
-                  <textarea
-                    v-model="editingDraft"
-                    rows="3"
-                    class="text-sm text-stone-900 px-3 py-2 border border-stone-300 rounded-lg bg-white w-full resize-y dark:text-stone-100 focus:outline-none dark:border-stone-600 focus:border-stone-500 dark:bg-stone-900"
-                  />
-                  <div class="mt-2 flex gap-2 justify-end">
-                    <button
-                      class="text-xs text-stone-700 px-3 py-1.5 rounded-md bg-stone-100 dark:text-stone-300 dark:bg-stone-800"
-                      @click="cancelEditing"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      class="text-xs text-white px-3 py-1.5 rounded-md bg-stone-700 dark:bg-stone-600"
-                      @click="saveEditAndRegenerate(message)"
-                    >
-                      Save & Regenerate
-                    </button>
-                  </div>
-                </template>
-                <template v-else>
-                  <div class="max-w-none prose prose-sm dark:prose-invert">
-                    <MarkdownRender :content="message.content" />
-                  </div>
-                </template>
+              <div v-if="message.role === 'user'" class="ml-auto w-[50%]">
+                <div
+                  class="text-sm text-stone-900 p-3 rounded-2xl bg-stone-200 dark:text-stone-100 dark:bg-stone-700"
+                >
+                  <template v-if="editingMessageId === message.id">
+                    <textarea
+                      v-model="editingDraft"
+                      rows="3"
+                      resize-none
+                      class="text-sm text-stone-900 px-3 py-2 border border-stone-300 rounded-lg bg-white w-full resize-y dark:text-stone-100 focus:outline-none dark:border-stone-600 focus:border-stone-500 dark:bg-stone-900"
+                    />
+                    <div class="mt-2 flex gap-2 justify-end">
+                      <button
+                        class="text-xs text-stone-700 px-3 py-1.5 rounded-md bg-stone-100 dark:text-stone-300 dark:bg-stone-800"
+                        @click="cancelEditing"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        class="text-xs text-white px-3 py-1.5 rounded-md bg-stone-700 dark:bg-stone-600"
+                        @click="saveEditAndRegenerate(message)"
+                      >
+                        Save & Regenerate
+                      </button>
+                    </div>
+                  </template>
+                  <template v-else>
+                    <span class="leading-relaxed whitespace-pre-wrap">
+                      {{ message.content }}
+                    </span>
+                  </template>
+                </div>
+                <div
+                  v-if="editingMessageId !== message.id"
+                  class="mt-1 flex justify-end"
+                >
+                  <button
+                    class="text-stone-500 rounded-md flex h-7 w-7 transition-colors items-center justify-center dark:text-stone-400 hover:text-stone-700 hover:bg-stone-200 disabled:opacity-50 disabled:cursor-not-allowed dark:hover:text-stone-200 dark:hover:bg-stone-800"
+                    title="Edit & Regenerate"
+                    aria-label="Edit and regenerate"
+                    :disabled="isStreaming"
+                    @click="startEditing(message)"
+                  >
+                    <div class="i-ph-pencil-simple-line text-sm" />
+                  </button>
+                </div>
               </div>
 
               <div
-                v-if="
-                  message.role === 'user' && editingMessageId !== message.id
-                "
-                class="mt-1 flex justify-end"
+                v-else
+                class="text-stone-900 mx-auto max-w-3xl dark:text-stone-100"
               >
-                <button
-                  class="text-xs text-stone-500 px-2 py-1 rounded-md flex gap-1 transition-colors items-center dark:text-stone-400 hover:text-stone-700 hover:bg-stone-200 dark:hover:text-stone-200 dark:hover:bg-stone-800"
-                  :disabled="isStreaming"
-                  @click="startEditing(message)"
+                <div
+                  class="max-w-none prose prose-stone prose-sm prose-a:text-stone-700 prose-code:text-stone-200 prose-p:leading-7 prose-headings:font-semibold prose-pre:rounded-xl prose-pre:bg-stone-900 dark:prose-invert dark:prose-a:text-stone-300"
                 >
-                  <div class="i-ph-pencil-simple-line text-sm" />
-                  Edit & Regenerate
-                </button>
+                  <MarkdownRender :content="message.content" />
+                </div>
+                <div class="flex flex-wrap gap-1.5 -ml-2">
+                  <button
+                    class="text-stone-500 rounded-md flex h-7 w-7 transition-colors items-center justify-center dark:text-stone-400 hover:text-stone-700 hover:bg-stone-200 disabled:opacity-50 disabled:cursor-not-allowed dark:hover:text-stone-200 dark:hover:bg-stone-800"
+                    title="Regenerate"
+                    aria-label="Regenerate"
+                    :disabled="
+                      isStreaming || !canRegenerateAssistantMessage(message)
+                    "
+                    @click="regenerateAssistantMessage(message)"
+                  >
+                    <div class="i-ph-arrow-clockwise text-sm" />
+                  </button>
+                </div>
               </div>
             </template>
           </div>
 
-          <div
-            v-if="message.role === 'user'"
-            class="flex flex-shrink-0 h-6 w-6 items-center justify-center"
-          >
-            <div class="i-ph-user text-stone-400 dark:text-stone-500" />
+          <div v-if="isStreaming" class="mx-auto p-2 max-w-3xl">
+            <span
+              class="rounded-full bg-stone-400 h-2 w-2 inline-block animate-bounce dark:bg-stone-600"
+              style="animation-delay: 0ms"
+            />
+            <span
+              class="ml-1 rounded-full bg-stone-400 h-2 w-2 inline-block animate-bounce dark:bg-stone-600"
+              style="animation-delay: 150ms"
+            />
+            <span
+              class="ml-1 rounded-full bg-stone-400 h-2 w-2 inline-block animate-bounce dark:bg-stone-600"
+              style="animation-delay: 300ms"
+            />
           </div>
-        </div>
-
-        <div v-if="isStreaming" class="p-3 self-start">
-          <span
-            class="rounded-full bg-stone-400 h-2 w-2 inline-block animate-bounce dark:bg-stone-600"
-            style="animation-delay: 0ms"
-          />
-          <span
-            class="ml-1 rounded-full bg-stone-400 h-2 w-2 inline-block animate-bounce dark:bg-stone-600"
-            style="animation-delay: 150ms"
-          />
-          <span
-            class="ml-1 rounded-full bg-stone-400 h-2 w-2 inline-block animate-bounce dark:bg-stone-600"
-            style="animation-delay: 300ms"
-          />
-        </div>
-      </template>
+        </template>
+      </div>
     </div>
 
     <div
       class="p-3 border-t border-stone-200 bg-stone-100 md:p-4 dark:border-stone-800 dark:bg-stone-900"
     >
-      <div class="mx-auto max-w-4xl">
+      <div class="mx-auto max-w-5xl">
         <div class="relative">
           <textarea
             v-model="inputMessage"

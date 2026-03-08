@@ -6,6 +6,7 @@ import ScaledPreviewFrame from "../components/viewer/ScaledPreviewFrame.vue";
 import { useAI } from "../composables/ai";
 import { useChat } from "../composables/chat";
 import { useProjects } from "../composables/projects";
+import { buildInitialUserRequest } from "../prompts/agent";
 
 const route = useRoute();
 const router = useRouter();
@@ -14,6 +15,7 @@ const {
   updateWebsiteHtml,
   selectConversation,
   addMessage,
+  snapshotForUserMessage,
   setWebsiteData,
   updateConversationStatus,
   addToolRunMessage,
@@ -88,6 +90,20 @@ async function runInitialGeneration() {
 
   isBootstrappingGeneration.value = true;
   const formData = currentConversation.initialFormData;
+
+  const hasInitialUserMessage = currentConversation.messages.some(
+    (message) => message.role === "user" && message.kind === "text",
+  );
+  if (!hasInitialUserMessage) {
+    const initialUserMessage = addMessage(currentConversation.id, {
+      role: "user",
+      content: buildInitialUserRequest(formData),
+      kind: "text",
+    });
+    if (initialUserMessage) {
+      snapshotForUserMessage(currentConversation.id, initialUserMessage.id);
+    }
+  }
 
   const assistantMessage = addMessage(currentConversation.id, {
     role: "assistant",
