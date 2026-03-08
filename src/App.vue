@@ -10,10 +10,7 @@ const isProjectRoute = computed(() => route.path.startsWith("/project/"));
 <template>
   <div class="bg-stone-50 min-h-screen dark:bg-stone-950">
     <AppHeader v-if="!isProjectRoute" />
-    <main
-      class="overflow-hidden"
-      :class="isProjectRoute ? 'h-screen' : 'h-[calc(100vh-64px)]'"
-    >
+    <main :class="isProjectRoute ? '' : 'h-[calc(100vh-64px)] overflow-hidden'">
       <RouterView />
     </main>
   </div>

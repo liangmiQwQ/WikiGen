@@ -22,10 +22,12 @@ function handleKeydown(e: KeyboardEvent) {
 </script>
 
 <template>
-  <div class="p-3 bg-stone-100 md:p-4 dark:bg-stone-900" max-w-3xl w-full>
-    <div class="mx-auto">
+  <div
+    class="p-3 border-t border-stone-200/50 bg-stone-100/80 bottom-0 left-0 right-0 fixed z-30 backdrop-blur-md md:p-4 dark:border-stone-800/50 dark:bg-stone-900/80"
+  >
+    <div class="mx-auto max-w-3xl w-full">
       <div
-        class="group border border-stone-200 rounded-xl bg-white flex flex-col min-h-[80px] shadow-sm transition-all relative dark:border-stone-700 dark:bg-stone-800 focus-within:ring-2 focus-within:ring-stone-200 dark:focus-within:ring-stone-700"
+        class="group border border-stone-200 rounded-xl bg-white flex flex-col min-h-[80px] shadow-lg transition-all relative dark:border-stone-700 dark:bg-stone-800 focus-within:ring-2 focus-within:ring-stone-200 dark:focus-within:ring-stone-700"
       >
         <textarea
           :value="modelValue"

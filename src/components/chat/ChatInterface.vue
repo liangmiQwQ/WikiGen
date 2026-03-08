@@ -28,7 +28,6 @@ const {
   setWorkspaceFile,
 } = useChat();
 
-const messagesContainer = ref<HTMLElement>();
 const inputMessage = ref("");
 
 const messages = computed(() => props.conversation?.messages || []);
@@ -55,9 +54,10 @@ watch(
 
 async function scrollToBottom() {
   await nextTick();
-  if (messagesContainer.value) {
-    messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight;
-  }
+  window.scrollTo({
+    top: document.documentElement.scrollHeight,
+    behavior: "smooth",
+  });
 }
 
 async function runAssistantForConversation(conversationId: string) {
@@ -222,17 +222,9 @@ async function regenerateAssistantMessage(message: Message) {
 </script>
 
 <template>
-  <div
-    class="flex-col h-full w-full items-center"
-    flex="~ items-center justify-between"
-  >
-    <div
-      ref="messagesContainer"
-      class="p-4 flex flex-1 overflow-y-auto md:p-6"
-      max-w-3xl
-      w-full
-    >
-      <div class="flex flex-1 flex-col gap-3 w-max md:gap-4">
+  <div class="flex flex-col w-full items-center">
+    <div class="p-4 pb-32 flex flex-col max-w-3xl w-full md:p-6 md:pb-40">
+      <div class="flex flex-col gap-3 w-full md:gap-4">
         <!-- Empty State -->
         <div
           v-if="messages.length === 0"
@@ -271,8 +263,6 @@ async function regenerateAssistantMessage(message: Message) {
     <!-- Input Bar -->
     <ChatInput
       v-model="inputMessage"
-      max-w-3xl
-      w-full
       :placeholder="inputPlaceholder"
       :disabled="!props.conversation"
       :is-streaming="isStreaming"

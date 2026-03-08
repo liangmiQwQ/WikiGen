@@ -260,9 +260,11 @@ function goToPreview() {
 </script>
 
 <template>
-  <div class="bg-stone-100 flex flex-col h-full relative dark:bg-stone-900">
+  <div
+    class="bg-stone-100 flex flex-col min-h-screen relative dark:bg-stone-900"
+  >
     <div
-      class="border-b bg-stone-50 relative overflow-hidden backdrop-blur-md dark:border-stone-800 dark:bg-stone-900"
+      class="border-b bg-stone-50/80 top-0 relative sticky z-20 overflow-hidden backdrop-blur-md dark:border-stone-800 dark:bg-stone-900/80"
     >
       <div class="px-4 py-3 flex items-center justify-between">
         <div class="flex gap-3 min-w-0 items-center">
@@ -306,7 +308,7 @@ function goToPreview() {
       </div>
     </div>
 
-    <div class="flex-1 min-h-0">
+    <div class="flex-1">
       <ChatInterface
         v-if="conversation"
         :conversation="conversation"
