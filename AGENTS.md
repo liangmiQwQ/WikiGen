@@ -12,7 +12,7 @@ This project use UnoCSS for styling. We use `wind4` present and enabled `presetA
 
 This project use `vue@3.5` stable version with standard compiler.
 
-Keep AGENTS.md updated with project status. Consider if there is need to modify AGENTS.md.
+Keep AGENTS.md updated with the project codebase. Consider if there is need to modify AGENTS.md after your changes. Don't write something weird like project structure or project status in AGENTS.md.
 
 ## UI Guidelines
 
