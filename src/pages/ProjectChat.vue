@@ -2,7 +2,6 @@
 import { computed, ref, watch } from "vue";
 import { RouterLink, useRoute, useRouter } from "vue-router";
 import ChatInterface from "../components/chat/ChatInterface.vue";
-import ScaledPreviewFrame from "../components/viewer/ScaledPreviewFrame.vue";
 import { useAI } from "../composables/ai";
 import { useChat } from "../composables/chat";
 import { useProjects } from "../composables/projects";
@@ -263,7 +262,7 @@ function goToPreview() {
 <template>
   <div class="bg-stone-100 flex flex-col h-full relative dark:bg-stone-900">
     <div
-      class="bg-stone-50/85 relative overflow-hidden backdrop-blur-md dark:bg-stone-900/85"
+      class="border-b bg-stone-50 relative overflow-hidden backdrop-blur-md dark:border-stone-800 dark:bg-stone-900"
     >
       <div class="px-4 py-3 flex items-center justify-between">
         <div class="flex gap-3 min-w-0 items-center">
@@ -305,45 +304,14 @@ function goToPreview() {
           </button>
         </div>
       </div>
-      <div
-        class="h-6 from-stone-200/60 to-transparent bg-gradient-to-b dark:from-stone-950/70"
-      />
     </div>
 
-    <div class="pb-40 flex-1 min-h-0">
+    <div class="flex-1 min-h-0">
       <ChatInterface
         v-if="conversation"
         :conversation="conversation"
         @website-modified="handleWebsiteModified"
       />
-    </div>
-
-    <div
-      v-if="previewHtml"
-      class="border border-stone-300 rounded-xl bg-white w-[min(90vw,360px)] shadow-xl bottom-4 right-4 fixed z-40 overflow-hidden dark:border-stone-700 dark:bg-stone-900"
-    >
-      <div
-        class="px-3 py-2 border-b border-stone-200 bg-stone-100 flex items-center justify-between dark:border-stone-800 dark:bg-stone-800"
-      >
-        <div
-          class="text-sm text-stone-800 font-medium flex gap-1.5 items-center dark:text-stone-100"
-        >
-          <div class="i-ph-globe text-base" />
-          Live Website
-        </div>
-        <button
-          class="text-xs text-stone-600 px-2 py-1 rounded dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-700"
-          @click="goToPreview"
-        >
-          Full
-        </button>
-      </div>
-      <div class="bg-stone-100 h-[220px] dark:bg-stone-900">
-        <ScaledPreviewFrame
-          :html="previewHtml"
-          title="Floating Website Preview"
-        />
-      </div>
     </div>
   </div>
 </template>
