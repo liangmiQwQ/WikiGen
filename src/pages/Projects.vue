@@ -114,7 +114,13 @@ function isGenerating(projectId: string): boolean {
   const conversation = conversations.value.find(
     (c) => c.id === project.conversationId,
   );
-  return conversation?.status === "generating" || !project.html;
+  return conversation?.status === "generating";
+}
+
+function isDraft(projectId: string): boolean {
+  const project = projects.value.find((p) => p.id === projectId);
+  if (!project) return false;
+  return project.status === "draft";
 }
 </script>
 
@@ -179,7 +185,7 @@ function isGenerating(projectId: string): boolean {
               class="pointer-events-none"
             />
           </template>
-          <template v-else>
+          <template v-else-if="isGenerating(project.id)">
             <div
               class="bg-stone-100 flex flex-col h-full w-full items-center justify-center dark:bg-stone-900"
             >
@@ -189,6 +195,14 @@ function isGenerating(projectId: string): boolean {
               <p class="text-sm text-stone-500 dark:text-stone-400">
                 Generating...
               </p>
+            </div>
+          </template>
+          <template v-else>
+            <div
+              class="bg-stone-100 flex flex-col h-full w-full items-center justify-center dark:bg-stone-900"
+            >
+              <div class="i-ph-file-dashed text-3xl text-stone-400 mb-2" />
+              <p class="text-sm text-stone-500 dark:text-stone-400">Draft</p>
             </div>
           </template>
           <div
@@ -215,6 +229,16 @@ function isGenerating(projectId: string): boolean {
             >
               {{ project.name }}
             </h3>
+            <span
+              class="text-xs px-2 py-1 border rounded-full"
+              :class="
+                project.status === 'done'
+                  ? 'text-stone-700 border-stone-300 bg-stone-100 dark:text-stone-300 dark:border-stone-700 dark:bg-stone-800'
+                  : 'text-stone-600 border-stone-300 bg-stone-50 dark:text-stone-400 dark:border-stone-700 dark:bg-stone-900'
+              "
+            >
+              {{ project.status === "done" ? "Done" : "Draft" }}
+            </span>
             <div class="relative" :data-project-id="project.id">
               <button
                 class="p-1.5 rounded bg-stone-100 dark:bg-stone-900 hover:bg-stone-200 dark:hover:bg-stone-800"
@@ -227,7 +251,11 @@ function isGenerating(projectId: string): boolean {
           <p
             class="text-sm text-stone-600 mb-3 line-clamp-2 dark:text-stone-400"
           >
-            {{ project.description }}
+            {{
+              isDraft(project.id)
+                ? "Draft project. Open to continue generation."
+                : project.description
+            }}
           </p>
           <p class="text-xs text-stone-400 dark:text-stone-500">
             Created {{ formatDate(project.createdAt) }}

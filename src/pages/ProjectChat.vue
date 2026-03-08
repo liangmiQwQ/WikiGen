@@ -41,7 +41,7 @@ const conversation = computed(() => {
 
 const statusLabel = computed(() => {
   if (conversation.value?.status === "generating") return "Generating";
-  if (conversation.value?.status === "completed") return "Ready";
+  if (conversation.value?.status === "completed") return "Done";
   return "Draft";
 });
 

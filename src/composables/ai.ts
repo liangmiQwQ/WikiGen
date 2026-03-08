@@ -32,6 +32,14 @@ interface AgentChatMessage {
   role: AgentRole;
   content: string;
   tool_call_id?: string;
+  tool_calls?: {
+    id: string;
+    type: "function";
+    function: {
+      name: string;
+      arguments: string;
+    };
+  }[];
 }
 
 interface StreamResult {
@@ -437,10 +445,22 @@ export function useAI() {
 
         fullResponse += result.content;
 
-        if (result.content.trim()) {
+        if (result.content.trim() || result.toolCalls.length) {
           messages.push({
             role: "assistant",
             content: result.content,
+            ...(result.toolCalls.length
+              ? {
+                  tool_calls: result.toolCalls.map((toolCall) => ({
+                    id: toolCall.id,
+                    type: "function" as const,
+                    function: {
+                      name: toolCall.name,
+                      arguments: toolCall.arguments,
+                    },
+                  })),
+                }
+              : {}),
           });
         }
 

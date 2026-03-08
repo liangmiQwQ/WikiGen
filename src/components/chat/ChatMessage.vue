@@ -144,12 +144,14 @@ function handleSave() {
         >
           <MarkdownRender :content="message.content" />
         </div>
-        <div class="flex flex-wrap gap-1.5 -ml-2">
+        <div
+          v-if="!isStreaming && canRegenerate"
+          class="flex flex-wrap gap-1.5 -ml-2"
+        >
           <button
             class="text-stone-500 rounded-md flex h-7 w-7 transition-colors items-center justify-center dark:text-stone-400 hover:text-stone-700 hover:bg-stone-200 disabled:opacity-50 disabled:cursor-not-allowed dark:hover:text-stone-200 dark:hover:bg-stone-800"
             title="Regenerate"
             aria-label="Regenerate"
-            :disabled="isStreaming || !canRegenerate"
             @click="emit('regenerate', message)"
           >
             <div class="i-ph-arrow-clockwise text-sm" />

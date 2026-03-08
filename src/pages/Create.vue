@@ -2,14 +2,23 @@
 import { useRouter } from "vue-router";
 import CreationForm from "../components/creation/CreationForm.vue";
 import { useChat } from "../composables/chat";
+import { useProjects } from "../composables/projects";
 import type { WebsiteFormData } from "../types";
 
 const router = useRouter();
 const { createConversation, updateConversationStatus } = useChat();
+const { createProject } = useProjects();
 
 function handleFormSubmit(formData: WebsiteFormData) {
   const conversationId = createConversation(formData);
   updateConversationStatus(conversationId, "generating");
+  createProject(
+    formData.topic,
+    `Knowledge website about ${formData.topic}`,
+    "",
+    conversationId,
+    "draft",
+  );
 
   // Generation now runs directly in the chat page so progress and output are visible.
   router.push({

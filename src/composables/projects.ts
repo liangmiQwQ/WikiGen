@@ -1,21 +1,37 @@
 import { useStorage } from "@vueuse/core";
 import { v4 as uuidv4 } from "uuid";
 import type { Project } from "../types";
+import type { Ref } from "vue";
+
+type StoredProject = Omit<Project, "status"> & {
+  status?: Project["status"];
+};
 
 export function useProjects() {
-  const projects = useStorage<Project[]>("wikigen-projects", [], localStorage);
+  const projects = useStorage<StoredProject[]>(
+    "wikigen-projects",
+    [],
+    localStorage,
+  ) as Ref<Project[]>;
+
+  projects.value = projects.value.map((project) => ({
+    ...project,
+    status: project.html.trim() ? "done" : "draft",
+  }));
 
   function createProject(
     name: string,
     description: string,
     html: string,
     conversationId: string,
+    status: Project["status"] = html.trim() ? "done" : "draft",
   ): Project {
     const project: Project = {
       id: uuidv4(),
       name,
       description,
       html,
+      status,
       conversationId,
       createdAt: Date.now(),
     };
@@ -27,6 +43,9 @@ export function useProjects() {
     const project = projects.value.find((p) => p.id === id);
     if (project) {
       project.html = html;
+      if (html.trim()) {
+        project.status = "done";
+      }
     }
   }
 

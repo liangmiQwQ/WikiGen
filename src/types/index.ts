@@ -48,6 +48,7 @@ export interface Project {
   name: string;
   description: string;
   html: string;
+  status: "draft" | "done";
   conversationId: string;
   createdAt: number;
 }
