@@ -5,14 +5,12 @@ import ScaledPreviewFrame from "../components/viewer/ScaledPreviewFrame.vue";
 import { useChat } from "../composables/chat";
 import { useProjects } from "../composables/projects";
 
-const { projects, deleteProject, renameProject } = useProjects();
+const { projects, deleteProject } = useProjects();
 const { selectConversation, conversations } = useChat();
 const router = useRouter();
 
 const hasProjects = computed(() => projects.value.length > 0);
 const showDeleteConfirm = ref<string | null>(null);
-const showRenameModal = ref<string | null>(null);
-const renameInput = ref("");
 const showActionsMenu = ref<string | null>(null);
 const dropdownPosition = ref({ x: 0, y: 0 });
 
@@ -75,23 +73,6 @@ function getDaySuffix(day: number): string {
       return "rd";
     default:
       return "th";
-  }
-}
-
-function openRenameModal(projectId: string) {
-  const project = projects.value.find((p) => p.id === projectId);
-  if (project) {
-    renameInput.value = project.name;
-    showRenameModal.value = projectId;
-    showActionsMenu.value = null;
-  }
-}
-
-function handleRename() {
-  if (showRenameModal.value && renameInput.value.trim()) {
-    renameProject(showRenameModal.value, renameInput.value.trim());
-    showRenameModal.value = null;
-    renameInput.value = "";
   }
 }
 
@@ -300,46 +281,6 @@ function isDraft(projectId: string): boolean {
       </div>
     </div>
 
-    <!-- Rename Modal -->
-    <div
-      v-if="showRenameModal"
-      class="bg-black/50 flex items-center inset-0 justify-center fixed z-50"
-      @click="showRenameModal = null"
-    >
-      <div
-        class="p-5 rounded-lg bg-white max-w-sm w-full dark:bg-stone-900"
-        @click.stop
-      >
-        <h3
-          class="text-base text-stone-900 font-semibold mb-3 dark:text-stone-100"
-        >
-          Rename Project
-        </h3>
-        <input
-          v-model="renameInput"
-          type="text"
-          placeholder="Project name"
-          class="text-sm text-stone-900 mb-5 px-4 py-2 border border-stone-300 rounded-lg bg-white w-full transition-colors dark:text-stone-100 focus:outline-none dark:border-stone-600 focus:border-stone-500 dark:bg-stone-800/50 dark:focus:border-stone-400 placeholder-stone-400 dark:placeholder-stone-500"
-          @keyup.enter="handleRename"
-        />
-        <div class="flex gap-2 justify-end">
-          <button
-            class="text-sm text-stone-700 font-medium px-4 py-2 rounded-md bg-stone-100 dark:text-stone-300 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700"
-            @click="showRenameModal = null"
-          >
-            Cancel
-          </button>
-          <button
-            class="text-sm text-white font-medium px-4 py-2 rounded-md bg-stone-700 dark:bg-stone-600 hover:bg-stone-800 dark:hover:bg-stone-500"
-            :disabled="!renameInput.trim()"
-            @click="handleRename"
-          >
-            Rename
-          </button>
-        </div>
-      </div>
-    </div>
-
     <!-- Teleported Dropdown Menu -->
     <Teleport to="body">
       <div
@@ -352,13 +293,6 @@ function isDraft(projectId: string): boolean {
         }"
         @click.stop
       >
-        <button
-          class="text-sm text-stone-700 px-4 py-2 text-left flex gap-2 w-full items-center dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800"
-          @click="openRenameModal(showActionsMenu)"
-        >
-          <div class="i-ph-pencil-simple text-base" />
-          Rename
-        </button>
         <button
           class="text-sm text-red-600 px-4 py-2 text-left flex gap-2 w-full items-center dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
           @click="

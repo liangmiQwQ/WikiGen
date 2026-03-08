@@ -1,5 +1,9 @@
 import { ref } from "vue";
 import { buildInitialTaskPrompt, CHAT_SYSTEM_PROMPT } from "../prompts/agent";
+import {
+  buildProjectTitlePrompt,
+  PROJECT_TITLE_FALLBACK,
+} from "../prompts/project-title";
 import { useSettings } from "./settings";
 import type { Message, WebsiteFormData } from "../types";
 
@@ -293,6 +297,15 @@ async function runDescription(apiKey: string, prompt: string): Promise<string> {
   return data.choices?.[0]?.message?.content?.trim() || "";
 }
 
+function normalizeProjectTitle(raw: string): string {
+  const cleaned = raw
+    .replaceAll(/^["'`]+|["'`]+$/g, "")
+    .replaceAll(/\s+/g, " ")
+    .trim();
+  if (!cleaned) return PROJECT_TITLE_FALLBACK;
+  return cleaned.slice(0, 60);
+}
+
 function safeParseJson(raw: string): Record<string, any> {
   try {
     return JSON.parse(raw);
@@ -524,11 +537,26 @@ export function useAI() {
     return description || `Knowledge website about ${formData.topic}`;
   }
 
+  async function generateProjectTitle(
+    formData: WebsiteFormData,
+    html = "",
+  ): Promise<string> {
+    const apiKey = getCurrentApiKey();
+    if (!apiKey) {
+      throw new Error("DeepSeek API key is not configured");
+    }
+
+    const prompt = buildProjectTitlePrompt(formData, html);
+    const title = await runDescription(apiKey, prompt);
+    return normalizeProjectTitle(title);
+  }
+
   return {
     isStreaming,
     cancelCurrentResponse,
     runAgentChat,
     generateWebsite,
     generateDescription,
+    generateProjectTitle,
   };
 }

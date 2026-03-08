@@ -6,6 +6,7 @@ import { useAI } from "../composables/ai";
 import { useChat } from "../composables/chat";
 import { useProjects } from "../composables/projects";
 import { buildInitialUserRequest } from "../prompts/agent";
+import { PROJECT_TITLE_FALLBACK } from "../prompts/project-title";
 
 const route = useRoute();
 const router = useRouter();
@@ -23,11 +24,16 @@ const {
   getWorkspaceFile,
   setWorkspaceFile,
 } = useChat();
-const { createProject, getProjectByConversationId, updateProject } =
-  useProjects();
+const {
+  createProject,
+  getProjectByConversationId,
+  renameProject,
+  updateProject,
+} = useProjects();
 const {
   generateWebsite,
   generateDescription,
+  generateProjectTitle,
   cancelCurrentResponse,
   isStreaming,
 } = useAI();
@@ -201,17 +207,23 @@ async function runInitialGeneration() {
     }
 
     let description = `Knowledge website about ${formData.topic}`;
+    let projectTitle = PROJECT_TITLE_FALLBACK;
     try {
       description = await generateDescription(formData);
     } catch {
       // Keep fallback description.
+    }
+    try {
+      projectTitle = await generateProjectTitle(formData, latestHtml);
+    } catch {
+      // Keep fallback title.
     }
 
     if (currentConversation.website) {
       updateWebsiteHtml(currentConversation.id, latestHtml, latestSummary);
     } else {
       setWebsiteData(currentConversation.id, {
-        name: formData.topic,
+        name: projectTitle,
         description,
         html: latestHtml,
       });
@@ -219,10 +231,11 @@ async function runInitialGeneration() {
 
     const existingProject = getProjectByConversationId(currentConversation.id);
     if (existingProject) {
+      renameProject(existingProject.id, projectTitle);
       updateProject(existingProject.id, latestHtml);
     } else {
       createProject(
-        formData.topic,
+        projectTitle,
         description,
         latestHtml,
         currentConversation.id,

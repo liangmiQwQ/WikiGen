@@ -3,6 +3,7 @@ import { useRouter } from "vue-router";
 import CreationForm from "../components/creation/CreationForm.vue";
 import { useChat } from "../composables/chat";
 import { useProjects } from "../composables/projects";
+import { PROJECT_TITLE_FALLBACK } from "../prompts/project-title";
 import type { WebsiteFormData } from "../types";
 
 const router = useRouter();
@@ -13,7 +14,7 @@ function handleFormSubmit(formData: WebsiteFormData) {
   const conversationId = createConversation(formData);
   updateConversationStatus(conversationId, "generating");
   createProject(
-    formData.topic,
+    PROJECT_TITLE_FALLBACK,
     `Knowledge website about ${formData.topic}`,
     "",
     conversationId,
